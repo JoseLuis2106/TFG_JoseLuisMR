@@ -4,9 +4,10 @@ from gym import wrappers
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('/home/ubuntu_shared/TFG_JoseLuisMR')
-sys.path.append('/home/ubuntu_shared/TFG_JoseLuisMR/gym-examples')
-from QLearning import QLearning
+sys.path.append('/home/ubuntu_shared/Prueba_QL')
+sys.path.append('/home/ubuntu_shared/Prueba_QL/gym-examples')
+# from QLearning import QLearning
+from QLearning_MRTA import QLearning
 import gym_examples.envs
 import time
 
@@ -44,7 +45,7 @@ def plot_avg(data,txt):
     N=len(data)
     avg=np.empty(N)
     for i in range(N):
-        avg[i]=data[max(0,i-100):i+1].mean()
+        avg[i]=data[max(0,i-1000):i+1].mean()
     plt.plot(avg)
     plt.title("Evolution of average "+txt)
     plt.show()
@@ -58,7 +59,7 @@ if __name__=="__main__":
     train=1
 
     if train:           # Segun si se desea entrenar un nuevo algoritmo o probar uno existente
-        n_eps=2000000
+        n_eps=8000000
         total_steps=np.empty(n_eps)
         total_reward=np.empty(n_eps)
         tab_eps=[]
@@ -68,9 +69,9 @@ if __name__=="__main__":
             if ep<n_eps/10:
                 learner.epsilon=1.0
             elif ep<n_eps*3/4:
-                learner.epsilon = max(0.1, 0.999999 * learner.epsilon)
+                learner.epsilon = max(0.1, 0.9999999 * learner.epsilon)
             else:
-                learner.epsilon = max(0.01, 0.99999 * learner.epsilon)
+                learner.epsilon = max(0.01, 0.999999 * learner.epsilon)
 
             obs,_ = env.reset()
             state=ft.transform(obs)
@@ -83,7 +84,8 @@ if __name__=="__main__":
             while not done:
                 # print("Nro steps:",nsteps)
 
-                action = learner.choose_act(state)
+                # action = learner.choose_act(state)
+                action = learner.choose_act(state,list(obs["tasks_states"]))
                 # print(f"Asignacion:    {action}")
                 # print(f"Estado tareas: {obs['tasks_states']}")
 
@@ -121,7 +123,9 @@ if __name__=="__main__":
         plt.show()
 
     else:
-        learner.Q=np.load("q_table_mrtaworld.npy", allow_pickle=True).item()        # Carga una Q-Table anterior
+        # learner.Q=np.load("q_table_mrtaworld.npy", allow_pickle=True).item()        # Carga una Q-Table anterior
+        data = np.load("q_table_mrtaworld.npz", allow_pickle=True)                  # Carga una Q-Table anterior
+        learner.Q = data["Q"].item()
 
     # Prueba del algoritmo
     env = gym.make('gym_examples/MRTAWorld-v0',rows=8, cols=8, num_robots=2, num_tasks=3, render_mode='human')
@@ -135,8 +139,10 @@ if __name__=="__main__":
         nsteps=0
         return_=0
 
+        print(f"Prueba visual {i+1}")
         while not done:
-            action = learner.choose_act(state)
+            # action = learner.choose_act(state)
+            action = learner.choose_act(state,list(obs["tasks_states"]))
             print(f"Asignacion:    {action}")
             print(f"Estado tareas: {obs['tasks_states']}")
 
@@ -151,7 +157,7 @@ if __name__=="__main__":
 
             time.sleep(2)
 
-        print(f"Prueba visual {i+1} \nNumero steps: {nsteps}\nRecompensa: {return_}\n")
+        print(f"Numero steps: {nsteps}\nRecompensa: {return_}\n")
         reward_list.append(return_)
         steps_list.append(nsteps)
     env.close()
@@ -160,5 +166,5 @@ if __name__=="__main__":
     print(f"Media de recompensa de la prueba: {np.mean(reward_list)}")
 
     # Si se resuelve el problema de forma aceptable, se guarda la Q-Table (por decidir qué es aceptable)
-    # if np.mean(steps_list)<=size*1.5 and np.mean(reward_list)>200:
-    #     np.save("q_table_mrtaworld.npy", learner.Q)
+    if np.mean(reward_list)>120:
+        np.savez_compressed("q_table_mrtaworld.npz", Q=learner.Q)

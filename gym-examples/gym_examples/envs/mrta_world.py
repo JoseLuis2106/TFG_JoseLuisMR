@@ -27,7 +27,7 @@ class MRTAWorldEnv(gym.Env):
                 "robots_positions": spaces.Box(0, self.size - 1, shape=(self.num_robots,), dtype=int),      #Pos in interval (0,size-1)
                 "tasks_positions": spaces.Box(0, self.size - 1, shape=(self.num_tasks,), dtype=int),        #Pos in interval (0,size-1)
                 "tasks_states": spaces.MultiDiscrete([3] * self.num_tasks),                                 #0: Pending, 1: Completed, 2: Failed
-                "tasks_allocations": spaces.Box(0, self.num_robots, shape=(self.num_tasks,), dtype=int),    #0: Not allocated, else (n): Allocated to robot n
+                "tasks_allocations": spaces.Box(0, self.num_robots, shape=(self.num_tasks,), dtype=int),    #0: Not allocated, else (n): Allocated to robot n (Probar a cambiar por multidiscrete)
                 "time_lapse": spaces.Box(0, np.inf, dtype=float),                                           #Time lapsed since last step
             }
         )
@@ -101,40 +101,31 @@ class MRTAWorldEnv(gym.Env):
     
     def step(self, action):
         # Actualiza numero de steps y reinicia time lapse y variable end_step
-        self.steps+=1
-        self._time_lapse=0
-        end_step=0
-        action=np.asarray(action)
-
-        # Verifica que distintas tareas no usen el mismo robot o que haya algun robot asignado
-        robots_assigned = np.bincount(action[action > 0], minlength=self.num_robots + 1)[1:]  # Cuantas veces es asignado cada robot (debe ser 0 o 1)
-        if np.any(robots_assigned > 1) or np.all(robots_assigned == 0):
-            end_step = 1
-            reward = -100
-        else:
-            # Comprueba si alguna de las tareas asignadas ya estan completadas o falladas
-            for task, robot in enumerate(action):
-                if robot > 0:                               # Si la tarea está asignada
-                    if self._tasks_states[task] != 0:       # Si la tarea no está pendiente
-                        # print(f"Tarea {task} no pendiente")
-                        end_step = 1
-                        reward = -100
-                        break
-
-        # Asignacion de tareas solo si la accion es valida
-        if end_step == 0:
-            self._tasks_allocations = action.copy()
-            reward = 0
+        self.steps += 1
+        self._time_lapse = 0
+        end_step = 0
+        action = np.asarray(action)
 
         #Ejecucion del step
         terminated = 0
         truncated = 0
         observation = self._get_obs()
 
+        num_robots_assigned = np.count_nonzero(action)
+        num_tasks_pending = np.count_nonzero(self._tasks_states == 0)
+
+        if num_robots_assigned == 0:
+            reward = -100
+            end_step = 1
+        elif num_robots_assigned < min(self.num_robots,num_tasks_pending):
+            reward = -10*min(self.num_robots-num_robots_assigned,num_tasks_pending)
+        else:
+            reward = 0
+
 
         while not end_step:
             # Actualizacion del time lapse
-            self._time_lapse+=1
+            self._time_lapse += 1
 
             # Movimiento de los robots a sus tareas
             for i, robot_id in enumerate(np.asarray(action)):  # Para cada asignacion
@@ -151,23 +142,23 @@ class MRTAWorldEnv(gym.Env):
                         dir_row = np.sign(task_row - robot_row)
                         dir_col = np.sign(task_col - robot_col)
 
-                        robot_row+=dir_row
-                        robot_col+=dir_col
-                        robot_pos=self._rowcol2pos(robot_row,robot_col)
+                        robot_row += dir_row
+                        robot_col += dir_col
+                        robot_pos = self._rowcol2pos(robot_row,robot_col)
 
                         self._robots_positions[robot_id-1] = robot_pos
 
                     # Comprueba si el robot ha llegado a su tarea (por modificar: duracion variable y probabilidad fallo)
                     if self._robots_positions[robot_id-1] == task_pos and self._tasks_states[task_idx] != 1:
-                        reward+=20
+                        reward += 20
                         self._tasks_states[task_idx] = 1  # Task completed
-                        end_step=1
+                        end_step = 1
                         break  # Final del step
 
             # Un episodio acaba si todas las tareas se completan o si el numero de steps alcanza el limite (300)
             terminated = np.all(self._tasks_states == 1)
             truncated = self.steps>self.max_steps
-            reward+=100 if terminated else -1
+            reward += 100 if terminated else -1
             observation = self._get_obs()
             # info = self._get_info()
             
@@ -199,13 +190,13 @@ class MRTAWorldEnv(gym.Env):
 
         # Se dibujan primero las tareas
         for task, task_pos in enumerate(self._tasks_positions):
-            task_row, task_col=self._pos2rowcol(task_pos)
-            if self._tasks_states[task]==0:
-                color=(0, 0, 0)
-            elif self._tasks_states[task]==1:
-                color=(0, 255, 0)
+            task_row, task_col = self._pos2rowcol(task_pos)
+            if self._tasks_states[task] == 0:
+                color = (0, 0, 0)
+            elif self._tasks_states[task] == 1:
+                color = (0, 255, 0)
             else:
-                color=(255, 0, 0)
+                color = (255, 0, 0)
             pygame.draw.rect(
                 canvas, color,
                 pygame.Rect(pix_square_size * np.array([task_col, task_row]), (pix_square_size, pix_square_size)),
@@ -213,7 +204,7 @@ class MRTAWorldEnv(gym.Env):
 
         # Luego, los robots
         for rob_pos in self._robots_positions:
-            rob_row, rob_col=self._pos2rowcol(rob_pos)
+            rob_row, rob_col = self._pos2rowcol(rob_pos)
             pygame.draw.circle(
                 canvas,
                 (0, 0, 255),
@@ -249,7 +240,7 @@ class MRTAWorldEnv(gym.Env):
             self.clock.tick(self.metadata["render_fps"])
         else:  # rgb_array
             return np.transpose(
-                np.array(pygame.surfarray.pixels3d(canvas)), axes=(1, 0, 2)
+                np.array(pygame.surfarray.pixels3d(canvas)), axes = (1, 0, 2)
             )
         
     def close(self):
