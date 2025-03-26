@@ -22,12 +22,22 @@ def build_state(feats):
 def binarize(value,bins):
     return np.digitize(value,bins=bins)
 
+def pos2rowcol(pos,cols):
+        """
+        Transforma una posición como valor entero a posición como (fila,columna).
+        """
+        row, col = pos//cols, pos%cols
+        return row, col
+
 class StateTransformer:
     """
     Transforma las observaciones en un estado.
     """
-    def __init__(self,max_time=100):
+    def __init__(self,max_time=100,rows=8, cols=8):
+        self.rows=rows
+        self.cols=cols
         self.time_bins=np.linspace(0, int(max_time), 9)
+        self.dist_bins = np.linspace(0, np.sqrt(rows**2 + cols**2), 3)
 
     def transform(self,observation):
         robots_positions = list(np.array(observation["robots_positions"]).astype(int))
@@ -36,7 +46,22 @@ class StateTransformer:
         tasks_allocations = list(np.array(observation["tasks_allocations"]).astype(int))
         time_lapse = int(binarize(observation["time_lapse"],self.time_bins))
 
-        return build_state(robots_positions+tasks_positions+tasks_states+tasks_allocations+[time_lapse])
+        # return build_state(robots_positions+tasks_positions+tasks_states+tasks_allocations+[time_lapse])
+
+        # Sin tiempo en estado
+        # return build_state(robots_positions+tasks_positions+tasks_states+tasks_allocations)
+
+        # Usar distancias en lugar de posiciones
+        distances = []
+        for robot_pos in robots_positions:
+            robot_row, robot_col = pos2rowcol(robot_pos, self.cols)
+            for task_pos in tasks_positions:
+                task_row, task_col = pos2rowcol(task_pos, self.cols)
+                dist = np.sqrt((robot_row - task_row) ** 2 + (robot_col - task_col) ** 2)
+                distances.append(binarize(dist, self.dist_bins))
+
+        return build_state(distances + tasks_states + tasks_allocations + [time_lapse])
+    
 
 def plot_avg(data,txt):
     """
@@ -53,13 +78,14 @@ def plot_avg(data,txt):
 
 # Entrenamiento y pruebas
 if __name__=="__main__":
-    env = gym.make('gym_examples/MRTAWorld-v0',rows=8, cols=8, num_robots=2, num_tasks=3)#, render_mode='human')
+    rows, cols=8, 8
+    env = gym.make('gym_examples/MRTAWorld-v0',rows=rows, cols=cols, num_robots=2, num_tasks=3)#, render_mode='human')
     learner=QLearning(env,alpha=1e-2,gamma=0.9)
-    ft=StateTransformer()
+    ft=StateTransformer(rows=rows, cols=cols)
     train=1
 
     if train:           # Segun si se desea entrenar un nuevo algoritmo o probar uno existente
-        n_eps=8000000
+        n_eps=9000000
         total_steps=np.empty(n_eps)
         total_reward=np.empty(n_eps)
         tab_eps=[]
@@ -69,9 +95,9 @@ if __name__=="__main__":
             if ep<n_eps/10:
                 learner.epsilon=1.0
             elif ep<n_eps*3/4:
-                learner.epsilon = max(0.1, 0.9999999 * learner.epsilon)
+                learner.epsilon = max(0.1, 0.9999995 * learner.epsilon)
             else:
-                learner.epsilon = max(0.01, 0.999999 * learner.epsilon)
+                learner.epsilon = max(0.01, 0.999998 * learner.epsilon)
 
             obs,_ = env.reset()
             state=ft.transform(obs)
@@ -111,7 +137,7 @@ if __name__=="__main__":
                 print(f"Recompensa media ultimos 100 episodios: {total_reward[max(0,ep-100):ep+1].mean()}\n")
 
 
-        print(f"Fin entrenamiento\nMedia ultimos 100 episodios: {total_steps[100:].mean()}\n Epsilon final: {learner.epsilon}\n")
+        print(f"Fin entrenamiento\nMedia ultimos 100 episodios: {total_steps[100:].mean()}\n Epsilon final: {learner.epsilon}")
         print(f"Recompensa media ultimos 100 episodios: {total_reward[100:].mean()}\n")
         plt.plot(total_steps[1:])
         plt.title("Total steps")
@@ -166,5 +192,5 @@ if __name__=="__main__":
     print(f"Media de recompensa de la prueba: {np.mean(reward_list)}")
 
     # Si se resuelve el problema de forma aceptable, se guarda la Q-Table (por decidir qué es aceptable)
-    if np.mean(reward_list)>120:
+    if np.mean(reward_list)>80:
         np.savez_compressed("q_table_mrtaworld.npz", Q=learner.Q)

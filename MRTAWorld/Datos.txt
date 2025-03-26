@@ -1,0 +1,34 @@
+Características de las distintas versiones (3 tareas, 2 robots, tarea completada automáticamente cuando su robot llega a ella).
+
+Nota: La media de recompensas de la prueba no tiene por qué ser representativa (solo son 10 épocas). Sin embargo, puede dar una idea de cómo de bien actúa cada versión (además de observar su comportamiento en simulación). 
+
+
+1. Version normal/inicial:
+Media recompensas prueba: 92.8
+No se almacena el resultado (demasiado grande/demasiados estados?)
+Según lo visto, no parece que la red termine de aprender (en algunos episodios, hay steps en los que no asigna tareas o solo asigna 1 en vez de 2).
+
+2. Sin el tiempo en los estados:
+Media recompensas prueba: 101.4
+Tampoco almacena resultado
+Según lo visto, no parece que la red termine de aprender (idem).
+
+3. Distancias en lugar de posiciones:
+Media recompensas prueba: 154.3
+Se almacena el resultado.
+Parece que asigna las tareas de forma bastante más eficiente.
+
+
+4. No reasignar tareas ya asignadas sin completar:
+
+
+2 y 3:
+
+
+2 y 4:
+
+
+3 y 4:
+
+
+2, 3 y 4:
