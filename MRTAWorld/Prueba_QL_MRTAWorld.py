@@ -150,7 +150,7 @@ if __name__=="__main__":
 
     else:
         # learner.Q=np.load("q_table_mrtaworld.npy", allow_pickle=True).item()        # Carga una Q-Table anterior
-        data = np.load("q_table_mrtaworld.npz", allow_pickle=True)                  # Carga una Q-Table anterior
+        data = np.load("q_table_mrtaworld_dists_bins3.npz", allow_pickle=True)                  # Carga una Q-Table anterior
         learner.Q = data["Q"].item()
 
     # Prueba del algoritmo
