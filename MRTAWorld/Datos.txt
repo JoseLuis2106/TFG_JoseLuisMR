@@ -1,34 +1,60 @@
 Características de las distintas versiones (3 tareas, 2 robots, tarea completada automáticamente cuando su robot llega a ella).
 
 Nota: La media de recompensas de la prueba no tiene por qué ser representativa (solo son 10 épocas). Sin embargo, puede dar una idea de cómo de bien actúa cada versión (además de observar su comportamiento en simulación). 
+Nota: Me he dado cuenta de que el bin del tiempo transcurrido no estaba bien configurado.
+Nota: Tambien acabo de ver que el entorno no estaba modificando nunca la variable de estado "task_allocations", y dado que algunas variantes estaban actuando bien (las que tenian menos estados), se ha considerado eliminarla. Si se solucionara esto, aumentaria el numero de estados. Si se decide eliminarla,, habria que reentrenar los algoritmos (los estados almacenados ya no serian validos)
 
 
-1. Version normal/inicial:
-Media recompensas prueba: 92.8
+1. Version normal/inicial: 
+Media recompensas prueba: 126.7
 No se almacena el resultado (demasiado grande/demasiados estados?)
 Según lo visto, no parece que la red termine de aprender (en algunos episodios, hay steps en los que no asigna tareas o solo asigna 1 en vez de 2).
+Tamaño:(S,A)=El proceso murió al intentar imprimir su tamaño
 
 2. Sin el tiempo en los estados:
-Media recompensas prueba: 101.4
-Tampoco almacena resultado
+Media recompensas prueba: 108.6
+No se almacena el resultado (idem)
 Según lo visto, no parece que la red termine de aprender (idem).
+Tamaño:(S,A)=(23737096,13)
 
 3. Distancias en lugar de posiciones:
-Media recompensas prueba: 154.3
+Media recompensas prueba: 152.4
 Se almacena el resultado.
-Parece que asigna las tareas de forma bastante más eficiente.
-
+Parece que asigna las tareas de forma bastante eficiente.
+Tamaño: (S,A)=(7418, 13)
 
 4. No reasignar tareas ya asignadas sin completar:
+Media recompensas prueba: 
 
+
+Tamaño: (S,A)=
 
 2 y 3:
-
+Media recompensas prueba: 154.5
+Se almacena el resultado.
+Parece que asigna las tareas de forma bastante eficiente.
+Tamaño: (S,A)=(3107, 13)
 
 2 y 4:
+Media recompensas prueba: 
 
+
+Tamaño: (S,A)=
 
 3 y 4:
+Media recompensas prueba: 
 
+
+Tamaño: (S,A)=
 
 2, 3 y 4:
+Media recompensas prueba: 
+
+
+Tamaño: (S,A)=
+
+5. Fusionar estado tareas con asignaciones:
+Media recompensas prueba: 
+
+
+Tamaño: (S,A)=
