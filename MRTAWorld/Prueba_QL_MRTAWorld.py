@@ -33,7 +33,7 @@ class StateTransformer:
     """
     Transforma las observaciones en un estado.
     """
-    def __init__(self,max_time=20,rows=8, cols=8):
+    def __init__(self,max_time=10,rows=8, cols=8):
         self.rows=rows
         self.cols=cols
         self.time_bins=np.linspace(3, int(max_time), 9)
@@ -43,8 +43,10 @@ class StateTransformer:
         robots_positions = list(np.array(observation["robots_positions"]).astype(int))
         tasks_positions = list(np.array(observation["tasks_positions"]).astype(int))
         tasks_states = list(np.array(observation["tasks_states"]).astype(int))
-        tasks_allocations = list(np.array(observation["tasks_allocations"]).astype(int))
+        # tasks_allocations = list(np.array(observation["tasks_allocations"]).astype(int))
         time_lapse = int(binarize(observation["time_lapse"],self.time_bins))
+
+        tasks_allocations = list(np.zeros(3, dtype=int))
 
         # return build_state(robots_positions+tasks_positions+tasks_states+tasks_allocations+[time_lapse])
 
@@ -85,7 +87,7 @@ if __name__=="__main__":
     env = gym.make('gym_examples/MRTAWorld-v0',rows=rows, cols=cols, num_robots=2, num_tasks=3)#, render_mode='human')
     learner=QLearning(env,alpha=1e-2,gamma=0.9)
     ft=StateTransformer(rows=rows, cols=cols)
-    train=0
+    train=1
 
     if train:           # Segun si se desea entrenar un nuevo algoritmo o probar uno existente
         n_eps=9000000
@@ -113,8 +115,8 @@ if __name__=="__main__":
             while not done:
                 # print("Nro steps:",nsteps)
 
-                # action = learner.choose_act(state)
-                action = learner.choose_act(state,list(obs["tasks_states"]))
+                # action = learner.choose_act(state,list(obs["tasks_states"]))
+                action = learner.choose_act(state,list(obs["tasks_states"]),list(obs["tasks_allocations"]))
                 # print(f"Asignacion:    {action}")
                 # print(f"Estado tareas: {obs['tasks_states']}")
 
@@ -172,7 +174,7 @@ if __name__=="__main__":
         print(f"Prueba visual {i+1}")
         while not done:
             # action = learner.choose_act(state)
-            action = learner.choose_act(state,list(obs["tasks_states"]))
+            action = learner.choose_act(state,list(obs["tasks_states"]),list(obs["tasks_allocations"]))
             print(f"Asignacion:    {action}")
             print(f"Estado tareas: {obs['tasks_states']}")
 
@@ -195,13 +197,13 @@ if __name__=="__main__":
     print(f"Media de steps de la prueba: {np.mean(steps_list)}")
     print(f"Media de recompensa de la prueba: {np.mean(reward_list)}")
 
-    # Tamaño de la Q-Table
-    states=set(state for state, _ in learner.Q.keys())
-    actions=set(action for _, action in learner.Q.keys())
-    num_states = len(states)
-    num_actions = len(actions)
+    # # Tamaño de la Q-Table
+    # states=set(state for state, _ in learner.Q.keys())
+    # actions=set(action for _, action in learner.Q.keys())
+    # num_states = len(states)
+    # num_actions = len(actions)
 
-    print("Size of Q-Table:\n",(num_states,num_actions))
+    # print("Size of Q-Table:\n",(num_states,num_actions))
 
     # Si se resuelve el problema de forma aceptable, se guarda la Q-Table (por decidir qué es aceptable)
     if np.mean(reward_list)>80:
