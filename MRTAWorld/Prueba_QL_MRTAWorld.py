@@ -43,15 +43,6 @@ class StateTransformer:
         robots_positions = list(np.array(observation["robots_positions"]).astype(int))
         tasks_positions = list(np.array(observation["tasks_positions"]).astype(int))
         tasks_states = list(np.array(observation["tasks_states"]).astype(int))
-        # tasks_allocations = list(np.array(observation["tasks_allocations"]).astype(int))
-        time_lapse = int(binarize(observation["time_lapse"],self.time_bins))
-
-        tasks_allocations = list(np.zeros(3, dtype=int))
-
-        # return build_state(robots_positions+tasks_positions+tasks_states+tasks_allocations+[time_lapse])
-
-        # Sin tiempo en estado
-        # return build_state(robots_positions+tasks_positions+tasks_states+tasks_allocations)
 
         # Usar distancias en lugar de posiciones
         distances = []
@@ -61,11 +52,9 @@ class StateTransformer:
                 task_row, task_col = pos2rowcol(task_pos, self.cols)
                 dist = np.sqrt((robot_row - task_row) ** 2 + (robot_col - task_col) ** 2)
                 distances.append(binarize(dist, self.dist_bins))
-
-        # return build_state(distances + tasks_states + tasks_allocations + [time_lapse])
             
             # Sin tiempo en estado
-        return build_state(distances + tasks_states + tasks_allocations)
+        return build_state(distances + tasks_states)
     
 
 def plot_avg(data,txt):
@@ -83,17 +72,19 @@ def plot_avg(data,txt):
 
 # Entrenamiento y pruebas
 if __name__=="__main__":
-    rows, cols=8, 8
-    env = gym.make('gym_examples/MRTAWorld-v0',rows=rows, cols=cols, num_robots=2, num_tasks=3)#, render_mode='human')
+    rows, cols = 8, 8
+    num_robots, num_tasks = 2, 5
+    env = gym.make('gym_examples/MRTAWorld-v0',rows=rows, cols=cols, num_robots=num_robots, num_tasks=num_tasks)#, render_mode='human')
     learner=QLearning(env,alpha=1e-2,gamma=0.9)
     ft=StateTransformer(rows=rows, cols=cols)
     train=1
 
     if train:           # Segun si se desea entrenar un nuevo algoritmo o probar uno existente
-        n_eps=9000000
+        n_eps=10000000
         total_steps=np.empty(n_eps)
         total_reward=np.empty(n_eps)
         tab_eps=[]
+        T_start=time.time()
 
         for ep in range(1,n_eps):
             # Epsilon-decay
@@ -140,9 +131,13 @@ if __name__=="__main__":
             if ep%1000==0:
                 print(f"Episodio {ep}\nMedia ultimos 100 episodios: {total_steps[max(0,ep-100):ep+1].mean()}")
                 print(f"Recompensa media ultimos 100 episodios: {total_reward[max(0,ep-100):ep+1].mean()}\n")
+        
+        T_end=time.time()
+        T_train=T_end-T_start
+        print("Fin entrenamiento")
+        print(f"Tiempo de entrenamiento: {T_train} s")
 
-
-        print(f"Fin entrenamiento\nMedia ultimos 100 episodios: {total_steps[100:].mean()}\n Epsilon final: {learner.epsilon}")
+        print(f"Media ultimos 100 episodios: {total_steps[100:].mean()}\n Epsilon final: {learner.epsilon}")
         print(f"Recompensa media ultimos 100 episodios: {total_reward[100:].mean()}\n")
         plt.plot(total_steps[1:])
         plt.title("Total steps")
@@ -154,12 +149,11 @@ if __name__=="__main__":
         plt.show()
 
     else:
-        # learner.Q=np.load("q_table_mrtaworld.npy", allow_pickle=True).item()        # Carga una Q-Table anterior
-        data = np.load("q_table_mrtaworld_dists_bins3_noT.npz", allow_pickle=True)        # Carga una Q-Table anterior
+        data = np.load("q_table_mrtaworld.npz", allow_pickle=True)        # Carga una Q-Table anterior
         learner.Q = data["Q"].item()
 
     # Prueba del algoritmo
-    env = gym.make('gym_examples/MRTAWorld-v0',rows=8, cols=8, num_robots=2, num_tasks=3, render_mode='human')
+    env = gym.make('gym_examples/MRTAWorld-v0',rows=8, cols=8, num_robots=num_robots, num_tasks=num_tasks, render_mode='human')
     reward_list=[]
     steps_list=[]
     learner.epsilon=0.0
@@ -197,14 +191,6 @@ if __name__=="__main__":
     print(f"Media de steps de la prueba: {np.mean(steps_list)}")
     print(f"Media de recompensa de la prueba: {np.mean(reward_list)}")
 
-    # # Tamaño de la Q-Table
-    # states=set(state for state, _ in learner.Q.keys())
-    # actions=set(action for _, action in learner.Q.keys())
-    # num_states = len(states)
-    # num_actions = len(actions)
-
-    # print("Size of Q-Table:\n",(num_states,num_actions))
-
     # Si se resuelve el problema de forma aceptable, se guarda la Q-Table (por decidir qué es aceptable)
-    if np.mean(reward_list)>80:
-        np.savez_compressed("q_table_mrtaworld.npz", Q=learner.Q)
+    if np.mean(reward_list)>100:
+        np.savez_compressed("q_table_mrtaworld_5tasks.npz", Q=learner.Q)

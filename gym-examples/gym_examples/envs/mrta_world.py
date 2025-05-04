@@ -136,60 +136,116 @@ class MRTAWorldEnv(gym.Env):
             if self._tasks_allocations[task]>0:
                 self._tasks_states[task]=3     # Tarea asignada a algun robot
 
-        while not end_step:
-            # Actualizacion del time lapse
-            self._time_lapse += 1
-            # print("tasks_allocations",self._tasks_allocations)
+        if self.render_mode != "human":
+            try:
+                min_dist = min(         # Menor de las distancias entre cada robot y su tarea
+                    abs(self._pos2rowcol(self._tasks_positions[task])[0] - self._pos2rowcol(self._robots_positions[robot-1])[0]) +
+                    abs(self._pos2rowcol(self._tasks_positions[task])[1] - self._pos2rowcol(self._robots_positions[robot-1])[1])
+                    for task, robot in enumerate(self._tasks_allocations) if robot > 0)
+            except ValueError:
+                min_dist = 0
 
-            # Movimiento de los robots a sus tareas
-            # for i, robot_id in enumerate(np.asarray(action)):  # Para cada asignacion
+            self._time_lapse=min_dist
+            
             for i, robot_id in enumerate(self._tasks_allocations):  # Para cada asignacion
                 if robot_id > 0:  # Si la tarea está asignada
                     task_idx = i  # Indice de la tarea
                     task_pos = self._tasks_positions[task_idx]          # Posicion de la tarea
                     robot_pos = self._robots_positions[robot_id-1]      # Posicion del robot
 
-                    # print(f"Tarea: {task_idx}, Robot: {robot_id}")
+                    task_row, task_col = self._pos2rowcol(task_pos)
+                    robot_row, robot_col = self._pos2rowcol(robot_pos)
 
-                    # Movimiento de cada robot
-                    if robot_pos != task_pos:
-                        task_row, task_col = self._pos2rowcol(task_pos)
-                        robot_row, robot_col = self._pos2rowcol(robot_pos)
+                    dir_row = np.sign(task_row - robot_row)
+                    dir_col = np.sign(task_col - robot_col)
 
-                        dir_row = np.sign(task_row - robot_row)
-                        dir_col = np.sign(task_col - robot_col)
+                    robot_row += dir_row*min(min_dist,abs(task_row-robot_row))
+                    min_dist_aux=min_dist-min(min_dist,abs(task_row-robot_row))
+                    robot_col += dir_col*min(min_dist_aux,abs(task_col-robot_col))
 
-                        robot_row += dir_row
-                        robot_col += dir_col
-                        robot_pos = self._rowcol2pos(robot_row,robot_col)
+                    robot_pos = self._rowcol2pos(robot_row,robot_col)
+                    self._robots_positions[robot_id-1] = robot_pos
 
-                        self._robots_positions[robot_id-1] = robot_pos
-
-                    # Comprueba si el robot ha llegado a su tarea (por modificar: duracion variable y probabilidad fallo)
+            # Comprueba si el robot ha llegado a su tarea (por modificar: duracion variable y probabilidad fallo)
+            for i, robot_id in enumerate(self._tasks_allocations):  # Para cada asignacion
+                if robot_id > 0:  # Si la tarea está asignada
+                    task_idx = i  # Indice de la tarea
+                    task_pos = self._tasks_positions[task_idx]          # Posicion de la tarea
+                    robot_pos = self._robots_positions[robot_id-1]      # Posicion del robot
                     if self._robots_positions[robot_id-1] == task_pos and self._tasks_states[task_idx] != 1:
                         reward += 20
                         self._tasks_states[task_idx] = 1  # Task completed
                         self._tasks_allocations[task_idx] = 0
                         end_step = 1
                         break  # Final del step
-
+            
             # Un episodio acaba si todas las tareas se completan o si el numero de steps alcanza el limite (300)
             terminated = np.all(self._tasks_states != 0) and np.all(self._tasks_states != 3)
             truncated = self.steps>self.max_steps
-            reward += 100 if terminated else -1
+            reward += 100 if terminated else -self._time_lapse
             observation = self._get_obs()
             # info = self._get_info()
-            
+                
             end_step=end_step or terminated or truncated
+                  
+        else:
+            while not end_step:
+                # Actualizacion del time lapse
+                self._time_lapse += 1
+                # print("tasks_allocations",self._tasks_allocations)
+
+                # Movimiento de los robots a sus tareas
+                # for i, robot_id in enumerate(np.asarray(action)):  # Para cada asignacion
+                for i, robot_id in enumerate(self._tasks_allocations):  # Para cada asignacion
+                    if robot_id > 0:  # Si la tarea está asignada
+                        task_idx = i  # Indice de la tarea
+                        task_pos = self._tasks_positions[task_idx]          # Posicion de la tarea
+                        robot_pos = self._robots_positions[robot_id-1]      # Posicion del robot
+
+                        # print(f"Tarea: {task_idx}, Robot: {robot_id}")
+
+                        # Movimiento de cada robot
+                        if robot_pos != task_pos:
+                            task_row, task_col = self._pos2rowcol(task_pos)
+                            robot_row, robot_col = self._pos2rowcol(robot_pos)
+
+                            dir_row = np.sign(task_row - robot_row)
+                            if dir_row == 0:                                # Evitar movimiento diagonal
+                                dir_col = np.sign(task_col - robot_col)
+                            else:
+                                dir_col = 0
+
+                            robot_row += dir_row
+                            robot_col += dir_col
+                            robot_pos = self._rowcol2pos(robot_row,robot_col)
+
+                            self._robots_positions[robot_id-1] = robot_pos
+
+                        # Comprueba si el robot ha llegado a su tarea (por modificar: duracion variable y probabilidad fallo)
+                        if self._robots_positions[robot_id-1] == task_pos and self._tasks_states[task_idx] != 1:
+                            reward += 20
+                            self._tasks_states[task_idx] = 1  # Task completed
+                            self._tasks_allocations[task_idx] = 0
+                            end_step = 1
+                            break  # Final del step
+
+                # Un episodio acaba si todas las tareas se completan o si el numero de steps alcanza el limite (300)
+                terminated = np.all(self._tasks_states != 0) and np.all(self._tasks_states != 3)
+                truncated = self.steps>self.max_steps
+                reward += 100 if terminated else -1
+                observation = self._get_obs()
+                # info = self._get_info()
+                
+                end_step=end_step or terminated or truncated
 
 
-            if self.render_mode == "human":
-                self._render_frame()
+                if self.render_mode == "human":
+                    self._render_frame()
 
-            # print("reward",reward)
+                # print("reward",reward)
 
-            # if self._time_lapse == 100:
-            #         print("Asignaciones",self._tasks_allocations)
+                # if self._time_lapse == 100:
+                #         print("Asignaciones",self._tasks_allocations)
 
         return observation, reward, terminated, truncated, {}#info
     

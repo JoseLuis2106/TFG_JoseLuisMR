@@ -10,52 +10,46 @@ Nota: Posibles errores al calcular número máximo de estados.
 Media recompensas prueba: 126.7
 No se almacena el resultado (demasiado grande/demasiados estados?)
 Según lo visto, no parece que la red termine de aprender (en algunos episodios, hay steps en los que no asigna tareas o solo asigna 1 en vez de 2).
-Nº maximo estados (sin tasks_allocations): ~2.5*10^11
+Nº máximo estados (sin tasks_allocations): ~2.5*10^11
 
 2. Sin el tiempo en los estados:
 Media recompensas prueba: 108.6
 No se almacena el resultado (idem)
 Según lo visto, no parece que la red termine de aprender (idem).
-Nº maximo estados (sin tasks_allocations): ~2.5*10^10
+Nº máximo estados (sin tasks_allocations): ~2.5*10^10
 
 3. Distancias en lugar de posiciones:
 Media recompensas prueba: 152.4
 Se almacena el resultado.
 Parece que asigna las tareas de forma bastante eficiente.
-Nº maximo estados (sin tasks_allocations): ~1.1*10^6
+Nº máximo estados (sin tasks_allocations): ~1.1*10^6
 
 4. No reasignar tareas ya asignadas sin completar:
 Media recompensas prueba: 123.8
 No se almacena el resultado (idem)
 Según lo visto, no parece que la red termine de aprender (idem).
-Nº maximo estados (sin tasks_allocations): ~5.9*10^11
+Nº máximo estados (sin tasks_allocations): ~5.9*10^11
 
 2 y 3:
 Media recompensas prueba: 154.5
 Se almacena el resultado.
 Parece que asigna las tareas de forma bastante eficiente.
-Nº maximo estados (sin tasks_allocations): ~1.1*10^5
+Nº máximo estados (sin tasks_allocations): ~1.1*10^5
 
 2 y 4:
 Media recompensas prueba: 98.9
 No se almacena el resultado.
 Comportamiento sil¡milar a 1 y 2.
-Nº maximo estados (sin tasks_allocations): ~5.9*10^10
+Nº máximo estados (sin tasks_allocations): ~5.9*10^10
 
 3 y 4:
 Media recompensas prueba: 153.8
 Se almacena el resultado.
 Parece que asigna las tareas de forma bastante eficiente.
-Nº maximo estados (sin tasks_allocations): ~2.6*10^6
+Nº máximo estados (sin tasks_allocations): ~2.6*10^6
 
 2, 3 y 4:
 Media recompensas prueba: 152.9
 Se almacena el resultado.
 Parece que asigna las tareas de forma bastante eficiente.
-Nº maximo estados (sin tasks_allocations): ~2.6*10^5
-
-5. Fusionar estado tareas con asignaciones: (No es necesario si acabamos eliminando tasks_allocations)
-Media recompensas prueba: 
-
-
-Nº maximo estados: 
+Nº máximo estados (sin tasks_allocations): ~2.6*10^5
