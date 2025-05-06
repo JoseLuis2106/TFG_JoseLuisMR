@@ -1,5 +1,6 @@
 Nota: La media de recompensas de la prueba no tiene por qué ser representativa (solo son 10 épocas). Sin embargo, puede dar una idea de cómo de bien actúa cada versión (además de observar su comportamiento en simulación).
 Nota: Version final: Sin tiempo en los estados, distancias en lugar de posiciones, no reasignar tareas ya asignadas, sin task allocation en los estados.
+Nota: Las recompensas con bucle while pueden estar "infladas", ya que al eliminar el bucle y para que ambos comportamientos (con y sin renderizado) sean lo mas parecidos posibles, se suprimieron los movimientos diagonales que si tienen las pruebas con el bucle.
 
 
 Normal (con bucle while, 3 tareas):
