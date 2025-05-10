@@ -29,6 +29,6 @@ Nº máximo estados: ~1.1*10^9
 
 Sin bucle while, 5 tareas y 10M épocas:
 Media recompensas prueba: 154.7 (maximo "posible": 200)
-Parece que asigna las tareas de forma mas eficiente (¿aun más épocas?).
+Parece que asigna las tareas de forma algo mas eficiente (¿aun más épocas?).
 Tiempo de entrenamiento: 22956.2s (6h 22min 36s)
 Nº máximo estados: ~1.1*10^9
