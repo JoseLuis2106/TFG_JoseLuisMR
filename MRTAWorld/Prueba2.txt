@@ -1,0 +1,28 @@
+Con métrica "Numero de tareas asignadas a cada tipo de robot"
+
+1. 3 Tareas.
+Media recompensas validación: 110.70 (maximo "posible": 160)
+Parece que asigna las tareas de forma algo eficiente
+Suele asignar 2 tareas al robot de alta capacidad y 1 al de baja capacidad
+Tiempo de entrenamiento: 3823.1s (1h 3min 43s)
+Tiempo medio para completar todas las tareas (validación): 18.82
+Distancia media recorrida por robot 1 (validación): 7.87
+Distancia media recorrida por robot 2 (validación): 7.84
+Media de tareas asignadas a robot baja capacidad (validación): 1.27
+Media de tareas asignadas a robot alta capacidad (validación): 1.73
+Media exito validación: 81.81%
+Media exito test: 76.67%
+
+
+2. 4 Tareas.
+Media recompensas validación: 124.39 (maximo "posible": 180)
+Parece que asigna las tareas de forma poco eficiente
+A veces asigna mas tareas al robot de alta capacidad que al de baja capacidad
+Tiempo de entrenamiento: 5442.9s (1h 30min 43s)
+Tiempo medio para completar todas las tareas (validación): 18.12
+Distancia media recorrida por robot 1 (validación): 10.55
+Distancia media recorrida por robot 2 (validación): 10.57
+Media de tareas asignadas a robot baja capacidad (validación): 1.996
+Media de tareas asignadas a robot alta capacidad (validación): 2.004
+Media exito validación: 80.01%
+Media exito test: 80.00%

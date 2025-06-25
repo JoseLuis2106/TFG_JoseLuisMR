@@ -1,0 +1,28 @@
+Quitando penalización robots ociosos
+
+1. 3 Tareas. 
+Media recompensas validación:  (maximo "posible": 160)
+Parece que asigna las tareas de forma algo eficiente
+
+Tiempo de entrenamiento: s (s)
+Tiempo medio para completar todas las tareas (validación): 
+Distancia media recorrida por robot 1 (validación): 
+Distancia media recorrida por robot 2 (validación): 
+Media de tareas asignadas a robot baja capacidad (validación): 
+Media de tareas asignadas a robot alta capacidad (validación): 
+Media exito validación: %
+Media exito test: %
+
+
+2. 4 Tareas.
+Media recompensas validación:  (maximo "posible": 180)
+Parece que asigna las tareas de forma poco eficiente
+
+Tiempo de entrenamiento: s (s)
+Tiempo medio para completar todas las tareas (validación): 
+Distancia media recorrida por robot 1 (validación): 
+Distancia media recorrida por robot 2 (validación): 
+Media de tareas asignadas a robot baja capacidad (validación): 
+Media de tareas asignadas a robot alta capacidad (validación): 
+Media exito validación: %
+Media exito test: %
