@@ -16,8 +16,8 @@ Media exito test: 76.67%
 
 2. 4 Tareas.
 Media recompensas validación: 124.39 (maximo "posible": 180)
-Parece que asigna las tareas de forma poco eficiente
-A veces asigna mas tareas al robot de alta capacidad que al de baja capacidad
+Parece que asigna las tareas de forma algo eficiente
+Suele esperar a que ambos robots acaben su primera tarea para asignar las otras 2
 Tiempo de entrenamiento: 5442.9s (1h 30min 43s)
 Tiempo medio para completar todas las tareas (validación): 18.12
 Distancia media recorrida por robot 1 (validación): 10.55

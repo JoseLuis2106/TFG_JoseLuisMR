@@ -63,11 +63,10 @@ class StateTransformer:
         # print(f"Tareas: {tasks_states}")
         # print(f"Robots ocupados: {busy_robots}")
 
-        # return build_state(distances + tasks_states)
-        # return build_state(distances + tasks_states + busy_robots)
-        # return build_state(distances + tasks_states + busy_robots + robots_types)
-        # return build_state(distances + tasks_states + busy_robots + tasks_types + robots_types)
         return build_state(distances + tasks_states + tasks_allocations + tasks_types + robots_types)
+        # return build_state(distances + tasks_states + tasks_allocations + tasks_types)                      # Prueba 5
+        # return build_state(distances + tasks_states + tasks_allocations + robots_types)                     # Prueba 6   
+
 
 
 def plot_avg(data,txt):
@@ -109,7 +108,7 @@ if __name__=="__main__":
         tasks_distribution = np.zeros((n_eps, 2))  # Dos tipos de robots (baja y alta capacidad)
         # tab_qmax = np.empty(n_eps)
 
-        print(f"Iniciando entrenamiento ({n_eps/1000000}M episodios)")
+        print(f"Iniciando entrenamiento ({int(n_eps/1000000)}M episodios)")
         T_start = time.time()
 
         for ep in range(1,n_eps+1):
@@ -242,7 +241,7 @@ if __name__=="__main__":
 
 
     else:
-        data = np.load("q_table_mrtaworld_4Tasks_CasoX.npz", allow_pickle=True)        # Carga una Q-Table anterior
+        data = np.load("q_table_mrtaworld_3Tasks_CasoX.npz", allow_pickle=True)        # Carga una Q-Table anterior
         learner.Q = data["Q"].item()
         # with open(f"q_table_mrtaworld_{num_tasks}Tasks_CasoX.pkl", "rb") as f:
         #     learner.Q = pickle.load(f)

@@ -183,14 +183,14 @@ class MRTAWorldEnv(gym.Env):
         # print("num_tasks_allocated",num_tasks_allocated)
 
         if num_robots_assigned == 0 and num_tasks_allocated == 0:
-            # reward = -100
+            reward = -100
             end_step = 1
-        # elif num_robots_assigned < min(self.num_robots, num_tasks_to_finish):
-        #     # print(f"Asignaciones insuficientes.\nRequeridos: {min(self.num_robots, num_tasks_to_finish)}, Asignados: {num_robots_assigned}")
-        #     reward = -20 * min(self.num_robots - num_robots_assigned, num_tasks_to_finish)
-        # else:
-        #     reward = 0
-        reward = 0              #Eliminar al acabar prueba4
+        elif num_robots_assigned < min(self.num_robots, num_tasks_to_finish):
+            # print(f"Asignaciones insuficientes.\nRequeridos: {min(self.num_robots, num_tasks_to_finish)}, Asignados: {num_robots_assigned}")
+            reward = -20 * min(self.num_robots - num_robots_assigned, num_tasks_to_finish)
+        else:
+            reward = 0
+
 
         # print(f"Asignaciones anteriores: {self._tasks_allocations} (mrta_world)")
         self._tasks_allocations = action.copy()         # Asignaciones de tareas a robots
@@ -362,7 +362,7 @@ class MRTAWorldEnv(gym.Env):
         canvas = pygame.Surface((self.window_size, self.window_size))
         canvas.fill((255, 255, 255))
         pix_square_size = (
-            self.window_size / np.max(self.rows,self.cols)
+            self.window_size / self.rows
         )  # Tamaño en pixeles de una celda
 
         # Se dibujan primero las tareas
