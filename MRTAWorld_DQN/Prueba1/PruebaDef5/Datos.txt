@@ -1,0 +1,5 @@
+No fallos
+Tareas mismo tipo
+Robots mismo tipo
+3 tareas 2 robots
+Estado con estados tareas y asignación anterior
