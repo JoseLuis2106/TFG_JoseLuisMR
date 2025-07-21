@@ -5,4 +5,5 @@ Robots mismo tipo
 1 robot
 Estado con estados tareas y asignación anterior
 1M eps
+epsilon corregido
 

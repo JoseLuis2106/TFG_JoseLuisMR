@@ -12,10 +12,11 @@ import time
 class QNetwork(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(QNetwork, self).__init__()
-        self.fc1 = nn.Linear(state_dim, 16)
-        self.fc2 = nn.Linear(16, 16)
-        self.fc3 = nn.Linear(16, 16)
-        self.fc4 = nn.Linear(16, action_dim)
+        num_neurons = 16                                # Número de neuronas en las capas ocultas (3 tareas: 16, 4 tareas: 24, 5 tareas: 32)
+        self.fc1 = nn.Linear(state_dim, num_neurons)
+        self.fc2 = nn.Linear(num_neurons, num_neurons)
+        self.fc3 = nn.Linear(num_neurons, num_neurons)
+        self.fc4 = nn.Linear(num_neurons, action_dim)
 
     def forward(self, x):
         x = F.leaky_relu(self.fc1(x), 0.1)
@@ -69,11 +70,13 @@ class DQN:
         """
         valid_actions = [a for a in self.valid_act_space if self._validate_action(a, tasks_states, tasks_allocations, busy_robots)]
 
-        # if not valid_actions:
-        #     print("No se encontraron acciones válidas")
-        #     print("tasks_states:", tasks_states)
-        #     print("tasks_allocations:", tasks_allocations)
-        #     print("busy_robots:", busy_robots)
+        if not valid_actions:
+            print("No se encontraron acciones válidas")
+            print("Estado:", state)
+            print("tasks_states:", tasks_states)
+            print("tasks_allocations:", tasks_allocations)
+            print("busy_robots:", busy_robots)
+            exit()
 
         # print(f"Acciones válidas: {valid_actions}")
 
@@ -83,14 +86,14 @@ class DQN:
         if np.random.random() < self.epsilon:
             action =  random.choice(valid_actions)                                                          # Explora una acción aleatoria válida
             # action = np.maximum(action, tasks_allocations)
-            
+
             # with torch.no_grad():
             #     state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)               # Convierte el estado a tensor y lo envía al dispositivo
             #     q_values = self.QPolicy(state).cpu().numpy().flatten()                                      # Obtiene los valores Q de la red de política
             #     q_values = [q_values[self.action_to_idx[a]] for a in valid_actions]                         # Filtra los valores Q para las acciones válidas                  
                 # for a, q in zip(valid_actions, q_values):
                 #     print(f"Acción: {a}, Valor Q: {q}") 
-            
+
             # print(f"Asignacion anterior: {tasks_allocations}")
             # print(f"Acción elegida: {action}")
             return action
@@ -141,7 +144,12 @@ class DQN:
         """
         action = tuple(action) if isinstance(action, (list, np.ndarray)) else action
         action_id = self.action_to_idx[action]
-        self.buffer.append((state, action_id, reward, next_state, done, obs))
+        obs_copy = {
+                "tasks_states": np.copy(obs["tasks_states"]),
+                "tasks_allocations": np.copy(obs["tasks_allocations"]),
+                "busy_robots": np.copy(obs["busy_robots"]),
+                }
+        self.buffer.append((state, action_id, reward, next_state, done, obs_copy))
 
 
     def updateQTarget(self):
@@ -152,7 +160,7 @@ class DQN:
             return
         
         # Batch aleatorio de experiencias
-        batch = random.sample(self.buffer, self.batch_size)
+        batch = random.sample(self.buffer, self.batch_size)                             # Se eliminan las experiencias?
         states, actions, rewards, next_states, dones, next_obs = zip(*batch)
         next_obs = {
             "tasks_states": [obs["tasks_states"] for obs in next_obs],

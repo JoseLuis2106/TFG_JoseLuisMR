@@ -42,9 +42,9 @@ class StateTransformer:
         """
         Devuelve la dimensión del estado.
         """
-        # return self.num_robots * 3 + self.num_tasks * 5                                 # Si posiciones
+        return self.num_robots * 3 + self.num_tasks * 5                                 # Si posiciones
         # return self.num_robots * self.num_tasks + self.num_tasks * 3 + self.num_robots  # Si distancias
-        return self.num_robots * self.num_tasks + self.num_tasks * 2
+        # return self.num_robots * self.num_tasks + self.num_tasks * 2
     
     def transform(self,observation):
         robots_positions = list(np.array(observation["robots_positions"]).astype(float))
@@ -66,18 +66,25 @@ class StateTransformer:
                 distances.append(dist)
 
         # Usar posiciones en lugar de distancias
-        # robrows, robcols = zip(*[pos2rowcol(pos, self.cols) for pos in robots_positions]) / max(self.rows, self.cols)   # Normalizar filas y columnas de robots
-        # taskrows, taskcols = zip(*[pos2rowcol(pos, self.cols) for pos in tasks_positions]) / max(self.rows, self.cols)  # Normalizar filas y columnas de tareas
+        # Normalizar filas y columnas de robots
+        robrows, robcols = zip(*[pos2rowcol(pos, self.cols) for pos in robots_positions])
+        robrows = np.array(robrows) / max(self.rows, self.cols)
+        robcols = np.array(robcols) / max(self.rows, self.cols)
+
+        # Normalizar filas y columnas de tareas
+        taskrows, taskcols = zip(*[pos2rowcol(pos, self.cols) for pos in tasks_positions])
+        taskrows = np.array(taskrows) / max(self.rows, self.cols)
+        taskcols = np.array(taskcols) / max(self.rows, self.cols)
 
         # print(f"Distancias: {distances}")
         # print(f"Tareas: {tasks_states}")
         # print(f"Robots ocupados: {busy_robots}")
 
-        # return build_state([robrows, robcols, taskrows, taskcols, tasks_states, tasks_allocations, tasks_types, robots_types])  # Si posiciones
+        return build_state([robrows, robcols, taskrows, taskcols, tasks_states, tasks_allocations, tasks_types, robots_types])  # Si posiciones
         # return build_state([distances, tasks_states, tasks_allocations, tasks_types, robots_types])                             # Si distancias
         # return build_state([distances, tasks_states, tasks_allocations, tasks_types])
         # return build_state([distances, tasks_states, tasks_allocations, robots_types])
-        return build_state([distances, tasks_states, tasks_allocations])
+        # return build_state([distances, tasks_states, tasks_allocations])
 
 
 def plot_avg(data,txt):
@@ -98,8 +105,8 @@ def plot_avg(data,txt):
 # Entrenamiento y pruebas
 if __name__=="__main__":
     rows, cols = 8, 8
-    # num_robots, num_tasks = 2, 3
-    num_robots, num_tasks = 1, 2
+    num_robots, num_tasks = 2, 3        # Modificar neuronas al cambiar el número de tareas
+    # num_robots, num_tasks = 1, 2
     env = gym.make('gym_examples/MRTAWorld-v0', rows = rows, cols = cols, num_robots = num_robots, num_tasks = num_tasks)#, render_mode = 'human')
     
     ft = StateTransformer(rows = rows, cols = cols, num_robots = num_robots, num_tasks = num_tasks)
@@ -107,7 +114,7 @@ if __name__=="__main__":
 
     learner = DQN(env = env, state_dim = state_dim, alpha = 1e-4, gamma = 0.9, batch_size = 64, buffer_size = 100000)
     
-    n_eps = 1000000
+    n_eps = 500000
     # n_eps = 1000
     train = 1
     val = 1
@@ -133,11 +140,11 @@ if __name__=="__main__":
             # if ep == 1:
                 learner.epsilon = 1.0
             elif ep < n_eps * 3/4:
-                learner.epsilon = max(0.1, 0.999996 * learner.epsilon)
-                # learner.epsilon = max(0.1, 0.999992 * learner.epsilon)
+                # learner.epsilon = max(0.1, 0.999996 * learner.epsilon)
+                learner.epsilon = max(0.1, 0.999992 * learner.epsilon)
             else:
-                learner.epsilon = max(0.01, 0.99999 * learner.epsilon)
-                # learner.epsilon = max(0.01, 0.99998 * learner.epsilon)
+                # learner.epsilon = max(0.01, 0.99999 * learner.epsilon)
+                learner.epsilon = max(0.01, 0.99998 * learner.epsilon)
             # learner.epsilon = 1
 
             obs, info = env.reset()
