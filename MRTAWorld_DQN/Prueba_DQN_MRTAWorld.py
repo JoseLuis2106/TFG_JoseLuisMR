@@ -105,7 +105,7 @@ def plot_avg(data,txt):
 # Entrenamiento y pruebas
 if __name__=="__main__":
     rows, cols = 8, 8
-    num_robots, num_tasks = 2, 3        # Modificar neuronas al cambiar el número de tareas
+    num_robots, num_tasks = 2, 5        # Modificar neuronas al cambiar el número de tareas
     # num_robots, num_tasks = 1, 2
     env = gym.make('gym_examples/MRTAWorld-v0', rows = rows, cols = cols, num_robots = num_robots, num_tasks = num_tasks)#, render_mode = 'human')
     

@@ -12,7 +12,7 @@ import time
 class QNetwork(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(QNetwork, self).__init__()
-        num_neurons = 16                                # Número de neuronas en las capas ocultas (3 tareas: 16, 4 tareas: 24, 5 tareas: 32)
+        num_neurons = 32                                # Número de neuronas en las capas ocultas (3 tareas: 16, 4 tareas: 24, 5 tareas: 32)
         self.fc1 = nn.Linear(state_dim, num_neurons)
         self.fc2 = nn.Linear(num_neurons, num_neurons)
         self.fc3 = nn.Linear(num_neurons, num_neurons)
@@ -85,7 +85,6 @@ class DQN:
 
         if np.random.random() < self.epsilon:
             action =  random.choice(valid_actions)                                                          # Explora una acción aleatoria válida
-            # action = np.maximum(action, tasks_allocations)
 
             # with torch.no_grad():
             #     state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)               # Convierte el estado a tensor y lo envía al dispositivo

@@ -4,18 +4,18 @@ import time
 
 #Algoritmo Q-Learning
 class QLearning:
-    def __init__(self,env,epsilon=0.1,alpha=0.1,gamma=0.9):
-        self.Q={}       # Q-table
-        self.env=env
-        self.epsilon=epsilon
-        self.alpha=alpha
-        self.gamma=gamma
+    def __init__(self, env, epsilon = 0.1, alpha = 0.1, gamma = 0.9):
+        self.Q = {}       # Q-table
+        self.env = env
+        self.epsilon = epsilon
+        self.alpha = alpha
+        self.gamma = gamma
 
         self.act_space = self._generate_action_combinations(env.action_space.nvec)
         self.valid_act_space = self._filter_valid_actions(self.act_space)
         
 
-    def getQ(self,state,action):
+    def getQ(self, state, action):
         """
         Recibe el valor de Q correspondiente a la tupla (estado, acción).
         """
@@ -31,9 +31,8 @@ class QLearning:
 
         valid_actions = [a for a in self.valid_act_space if self._validate_action(a, tasks_states, tasks_allocations, busy_robots)]
 
-        # for a in valid_actions:
-        #     print("Acción válida: ",a)
-        #     print("Valor Q asociado: ",self.getQ(state, a))
+        # for a, q in zip(valid_actions, [self.getQ(state, a) for a in valid_actions]):
+        #     print(f"Acción: {a}, Valor Q: {q}") 
 
         if np.random.random() < self.epsilon:
             action = valid_actions[np.random.randint(len(valid_actions))]
@@ -55,16 +54,16 @@ class QLearning:
             #     time.sleep(1)
             return action
         
-    def updateQ(self,state,action,reward,next_state):
+    def updateQ(self, state, action, reward, next_state):
         '''
         Q(s,a) <- Q(s,a) + alpha*(R + gamma*Qmax(s',a') - Q(s,a))
         '''
         action = tuple(action) if isinstance(action, np.ndarray) else action
 
-        Qant=self.getQ(state,action)
-        act=reward + self.gamma*np.max([self.getQ(next_state,next_action) for next_action in self.valid_act_space]) - Qant
+        Qant = self.getQ(state,action)
+        update = reward + self.gamma*np.max([self.getQ(next_state, next_action) for next_action in self.valid_act_space]) - Qant
 
-        self.Q[(state,action)]=Qant + self.alpha*act
+        self.Q[(state, action)] = Qant + self.alpha * update
 
     def _generate_action_combinations(self, nvec):
         """
