@@ -1,28 +1,30 @@
 Quitando penalización robots ociosos
 
 1. 3 Tareas. 
-Media recompensas validación: 110.92 (maximo "posible": 160)
+Media recompensas validación: 110.63 (maximo "posible": 160)
 Parece que asigna las tareas de forma algo eficiente
 Suele esperar a que terminen ambos robots su primera tarea para decidir a quien asignar la ultima
 Tiempo de entrenamiento: 3851.5s (1h 4min 12s)
-Tiempo medio para completar todas las tareas (validación): 18.83
-Distancia media recorrida por robot 1 (validación): 7.80
-Distancia media recorrida por robot 2 (validación): 7.78
-Media de tareas asignadas a robot baja capacidad (validación): 1.35
-Media de tareas asignadas a robot alta capacidad (validación): 1.65
-Media exito validación: 80.98%
+Media steps validación: 2.068
+Tiempo medio para completar todas las tareas (validación): 18.87
+Distancia media recorrida por robot 1 (validación): 7.91
+Distancia media recorrida por robot 2 (validación): 7.80
+Media de tareas asignadas a robot baja capacidad (validación): 1.36
+Media de tareas asignadas a robot alta capacidad (validación): 1.64
+Media exito validación: 80.60%
 Media exito test: 83.34%
 
 2. 4 Tareas. 14M eps
-Media recompensas validación: 125.08 (maximo "posible": 180)
+Media recompensas validación: 124.68 (maximo "posible": 180)
 Parece que asigna las tareas de forma algo eficiente
 A veces asigna mas tareas al robot de alta capacidad
 A veces espera a que acaben ambos robots su 1a tarea para asignar las otras 2
 Tiempo de entrenamiento: 7697.8s (2h 8min 18s)
-Tiempo medio para completar todas las tareas (validación): 19.47
-Distancia media recorrida por robot 1 (validación): 10.44
-Distancia media recorrida por robot 2 (validación): 10.44
-Media de tareas asignadas a robot baja capacidad (validación): 1.98
-Media de tareas asignadas a robot alta capacidad (validación): 2.02
-Media exito validación: 80.09%
+Media steps validación: 2.46
+Tiempo medio para completar todas las tareas (validación): 19.72
+Distancia media recorrida por robot 1 (validación): 10.54
+Distancia media recorrida por robot 2 (validación): 10.60
+Media de tareas asignadas a robot baja capacidad (validación): 1.97
+Media de tareas asignadas a robot alta capacidad (validación): 2.03
+Media exito validación: 80.20%
 Media exito test: 85.00%

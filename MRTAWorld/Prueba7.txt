@@ -13,15 +13,15 @@ Media exito validación: 80.99%
 Media exito test: 86.67%
 
 2. 4 Tareas. 
-Media recompensas validación: 107.70 (maximo "posible": 160)
+Media recompensas validación: 107.77 (maximo "posible": 180)
 Parece que asigna las tareas de forma algo eficiente
 Suele esperar a que ambos robots acaben su primera tarea para asignar las otras 2
-Tiempo medio para completar todas las tareas (validación): 18.39
+Tiempo medio para completar todas las tareas (validación): 18.38
 Distancia media recorrida por robot 1 (validación): 7.94
 Distancia media recorrida por robot 2 (validación): 7.95
 Media de tareas asignadas a robot baja capacidad (validación): 1.997
 Media de tareas asignadas a robot alta capacidad (validación): 2.003
-Media exito validación: 79.99%
+Media exito validación: 80.03%
 Media exito test: 82.5%
 
 
@@ -39,7 +39,7 @@ Media exito validación: 80.83%
 Media exito test: 86.67%
 
 4. 4 Tareas. 
-Media recompensas validación: 86.10 (maximo "posible": 160)
+Media recompensas validación: 86.10 (maximo "posible": 180)
 Parece que asigna las tareas de forma algo eficiente
 Suele esperar a que ambos robots acaben su primera tarea para asignar las otras 2
 Tiempo medio para completar todas las tareas (validación): 26.93
@@ -65,7 +65,7 @@ Media exito validación: 80.85%
 Media exito test: 86.67%
 
 6. 4 Tareas. 
-Media recompensas validación: 77.70 (maximo "posible": 160)
+Media recompensas validación: 77.70 (maximo "posible": 180)
 Parece que asigna las tareas de forma poco eficiente
 Suele esperar a que ambos robots acaben su primera tarea para asignar las otras 2
 Tiempo medio para completar todas las tareas (validación): 31.16

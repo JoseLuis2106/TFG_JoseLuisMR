@@ -25,20 +25,20 @@ def binarize(value,bins):
     return np.digitize(value,bins=bins)
 
 def pos2rowcol(pos,cols):
-        """
-        Transforma una posición como valor entero a posición como (fila,columna).
-        """
-        row, col = pos//cols, pos%cols
-        return row, col
+    """
+    Transforma una posición como valor entero a posición como (fila, columna).
+    """
+    row, col = pos//cols, pos%cols
+    return row, col
 
 class StateTransformer:
     """
     Transforma las observaciones en un estado.
     """
-    def __init__(self,max_time=10,rows=8, cols=8):
+    def __init__(self, max_time = 10, rows = 8, cols = 8):
         self.rows=rows
         self.cols=cols
-        self.time_bins=np.linspace(3, int(max_time), 9)
+        # self.time_bins=np.linspace(3, int(max_time), 9)
         self.dist_bins = np.linspace(2, np.sqrt(rows**2 + cols**2), 4)
 
     def transform(self,observation):
@@ -65,7 +65,7 @@ class StateTransformer:
 
         return build_state(distances + tasks_states + tasks_allocations + tasks_types + robots_types)
         # return build_state(distances + tasks_states + tasks_allocations + tasks_types)                      # Prueba 5
-        # return build_state(distances + tasks_states + tasks_allocations + robots_types)                     # Prueba 6   
+        # return build_state(distances + tasks_states + tasks_allocations + robots_types)                     # Prueba 6  
 
 
 
@@ -87,20 +87,20 @@ def plot_avg(data,txt):
 
 # Entrenamiento y pruebas
 if __name__=="__main__":
-    rows, cols = 8, 8
-    num_robots, num_tasks = 2, 3
+    rows, cols = 6, 6
+    num_robots, num_tasks = 2, 4
     env = gym.make('gym_examples/MRTAWorld-v0',rows = rows, cols = cols, num_robots = num_robots, num_tasks = num_tasks)#, render_mode = 'human')
     learner = QLearning(env, alpha = 1e-2, gamma = 0.9)
     ft = StateTransformer(rows = rows, cols = cols)
 
     n_eps = 10000000
     # n_eps = 10000
-    train = 1
+    train = 0
     val = 1
 
     if train:           # Segun si se desea entrenar un nuevo algoritmo o probar uno existente
         total_steps = np.zeros(n_eps)
-        total_reward = np.zeros(n_eps)
+        total_reward_tab = np.zeros(n_eps)
         tab_eps = []
         robot_dists = np.zeros((n_eps, num_robots))
         perc_success = np.zeros(n_eps)
@@ -124,7 +124,7 @@ if __name__=="__main__":
             state = ft.transform(obs)
             done = False
             nsteps = 0
-            return_ = 0
+            total_reward = 0
             TSteps = 0
             tab_eps.append(learner.epsilon)
             dist_per_robot = np.zeros(num_robots)
@@ -155,7 +155,7 @@ if __name__=="__main__":
                 # print(state)
 
                 nsteps += 1
-                return_ += reward
+                total_reward += reward
 
                 # time.sleep(2)
 
@@ -166,7 +166,7 @@ if __name__=="__main__":
             #     qmax = -1
 
             total_steps[ep-1] = nsteps
-            total_reward[ep-1] = return_
+            total_reward_tab[ep-1] = total_reward
             robot_dists[ep-1] = dist_per_robot
             tab_time[ep-1] = TSteps
             perc_success[ep-1] = info["perc_success"]
@@ -175,7 +175,7 @@ if __name__=="__main__":
 
             if ep % 2000 == 0:
                 print(f"Episodio {ep}\nMedia ultimos 1000 episodios: {total_steps[max(0,ep-1000):ep+1].mean():.2f}")
-                print(f"Recompensa media ultimos 1000 episodios: {total_reward[max(0,ep-1000):ep+1].mean():.2f}")
+                print(f"Recompensa media ultimos 1000 episodios: {total_reward_tab[max(0,ep-1000):ep+1].mean():.2f}")
                 print(f"Porcentaje de tareas completadas con exito (ultimos 1000 episodios): {perc_success[max(0,ep-1000):ep+1].mean()*100:.2f}%")
                 print(f"Tiempo medio para completar tareas en time-steps ultimos 1000 eps: {tab_time[max(0,ep-1000):ep+1].mean():.2f}\n")
 
@@ -198,7 +198,7 @@ if __name__=="__main__":
         print(f"Porcentaje de tareas completadas con exito (ultimos 1000 episodios): {perc_success[-1000:].mean()*100:.2f}%")
 
         print(f"Media ultimos 1000 episodios: {total_steps[1000:].mean()}\nEpsilon final: {learner.epsilon}")
-        print(f"Recompensa media ultimos 1000 episodios: {total_reward[1000:].mean()}\n")
+        print(f"Recompensa media ultimos 1000 episodios: {total_reward_tab[1000:].mean()}\n")
 
         plt.plot(total_steps)
         plt.title("Total steps")
@@ -210,15 +210,15 @@ if __name__=="__main__":
         # plot_avg(total_steps,"steps")
         plot_avg(total_steps,"Steps")
 
-        # plot_avg(total_reward,"reward")
-        plot_avg(total_reward,"Reward")
+        # plot_avg(total_reward_tab,"reward")
+        plot_avg(total_reward_tab,"Reward")
 
-        # plt.plot(tab_eps)
-        # plt.title("Evolucion epsilon")
-        # # plt.show()
-        # plt.grid()
-        # plt.savefig(f"EvolEps_{num_tasks}Tasks_CasoX.png")
-        # plt.clf()
+        plt.plot(tab_eps)
+        plt.title("Evolucion epsilon")
+        # plt.show()
+        plt.grid()
+        plt.savefig(f"EvolEps_{num_tasks}Tasks_CasoX.png")
+        plt.clf()
 
         for i in range(num_robots):
             # plot_avg(robot_dists[:, i], f"distance by robot {i+1}")
@@ -241,7 +241,7 @@ if __name__=="__main__":
 
 
     else:
-        data = np.load("q_table_mrtaworld_3Tasks_CasoX.npz", allow_pickle=True)        # Carga una Q-Table anterior
+        data = np.load(f"q_table_mrtaworld_{num_tasks}Tasks_Caso2.npz", allow_pickle=True)        # Carga una Q-Table anterior
         learner.Q = data["Q"].item()
         # with open(f"q_table_mrtaworld_{num_tasks}Tasks_CasoX.pkl", "rb") as f:
         #     learner.Q = pickle.load(f)
@@ -254,7 +254,7 @@ if __name__=="__main__":
         n_eps = int(n_eps / 4)
         learner.epsilon = 0.0
         total_steps = np.empty(n_eps)
-        total_reward = np.empty(n_eps)
+        total_reward_tab = np.empty(n_eps)
         tab_eps = []
         robot_dists = np.zeros((n_eps, num_robots))
         perc_success = np.zeros(n_eps)
@@ -268,7 +268,7 @@ if __name__=="__main__":
             state = ft.transform(obs)
             done = False
             nsteps = 0
-            return_ = 0
+            total_reward = 0
             dist_per_robot = np.zeros(num_robots)
             TSteps = 0
             
@@ -287,7 +287,7 @@ if __name__=="__main__":
                 # print(state)
 
                 nsteps += 1
-                return_ += reward
+                total_reward += reward
 
                 TSteps += info["time_steps"]
                 dist_per_robot += np.array(info["dist_travelled"])
@@ -298,7 +298,7 @@ if __name__=="__main__":
                 print(f"Episodio {ep}")
             
             total_steps[ep-1] = nsteps
-            total_reward[ep-1] = return_
+            total_reward_tab[ep-1] = total_reward
             robot_dists[ep-1] = dist_per_robot
             tab_time[ep-1] = TSteps
             perc_success[ep-1] = info["perc_success"]
@@ -309,7 +309,7 @@ if __name__=="__main__":
 
             # print(f"Porcentaje de tareas completadas con exito: {info['perc_success']*100:.2f}%")
 
-            # print(f"Numero steps: {nsteps}\nRecompensa: {return_}\n")
+            # print(f"Numero steps: {nsteps}\nRecompensa: {total_reward}\n")
 
         print("Fin evaluación")
         for i in range(num_robots): #Hacer media de ambos robots
@@ -323,7 +323,7 @@ if __name__=="__main__":
         print(f"Porcentaje de tareas completadas con éxito: {perc_success.mean()*100:.2f}%")
 
         print(f"Media steps: {total_steps.mean()}")
-        print(f"Recompensa media: {total_reward.mean()}\n")
+        print(f"Recompensa media: {total_reward_tab.mean()}\n")
 
 
     # Prueba del algoritmo
@@ -340,7 +340,7 @@ if __name__=="__main__":
         state = ft.transform(obs)
         done = False
         nsteps = 0
-        return_ = 0
+        total_reward = 0
         dist_per_robot = np.zeros(num_robots)
         TSteps = 0        
 
@@ -360,7 +360,7 @@ if __name__=="__main__":
             # print(state)
 
             nsteps += 1
-            return_ += reward
+            total_reward += reward
 
             TSteps += info["time_steps"]
             dist_per_robot += np.array(info["dist_travelled"])
@@ -372,8 +372,8 @@ if __name__=="__main__":
 
         print(f"Porcentaje de tareas completadas con exito: {info['perc_success']*100:.2f}%")
 
-        print(f"Numero steps: {nsteps}\nRecompensa: {return_}\n")
-        reward_list.append(return_)
+        print(f"Numero steps: {nsteps}\nRecompensa: {total_reward}\n")
+        reward_list.append(total_reward)
         steps_list.append(nsteps)
 
     env.close()

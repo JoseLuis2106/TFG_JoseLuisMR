@@ -42,8 +42,8 @@ class StateTransformer:
         """
         Devuelve la dimensión del estado.
         """
-        return self.num_robots * 3 + self.num_tasks * 5                                 # Si posiciones
-        # return self.num_robots * self.num_tasks + self.num_tasks * 3 + self.num_robots  # Si distancias
+        # return self.num_robots * 3 + self.num_tasks * 5                                 # Si posiciones
+        return self.num_robots * self.num_tasks + self.num_tasks * 3 + self.num_robots  # Si distancias
         # return self.num_robots * self.num_tasks + self.num_tasks * 2
     
     def transform(self,observation):
@@ -80,8 +80,8 @@ class StateTransformer:
         # print(f"Tareas: {tasks_states}")
         # print(f"Robots ocupados: {busy_robots}")
 
-        return build_state([robrows, robcols, taskrows, taskcols, tasks_states, tasks_allocations, tasks_types, robots_types])  # Si posiciones
-        # return build_state([distances, tasks_states, tasks_allocations, tasks_types, robots_types])                             # Si distancias
+        # return build_state([robrows, robcols, taskrows, taskcols, tasks_states, tasks_allocations, tasks_types, robots_types])  # Si posiciones
+        return build_state([distances, tasks_states, tasks_allocations, tasks_types, robots_types])                             # Si distancias
         # return build_state([distances, tasks_states, tasks_allocations, tasks_types])
         # return build_state([distances, tasks_states, tasks_allocations, robots_types])
         # return build_state([distances, tasks_states, tasks_allocations])
@@ -105,7 +105,7 @@ def plot_avg(data,txt):
 # Entrenamiento y pruebas
 if __name__=="__main__":
     rows, cols = 8, 8
-    num_robots, num_tasks = 2, 5        # Modificar neuronas al cambiar el número de tareas
+    num_robots, num_tasks = 2, 3        # Modificar neuronas al cambiar el número de tareas
     # num_robots, num_tasks = 1, 2
     env = gym.make('gym_examples/MRTAWorld-v0', rows = rows, cols = cols, num_robots = num_robots, num_tasks = num_tasks)#, render_mode = 'human')
     
@@ -116,7 +116,7 @@ if __name__=="__main__":
     
     n_eps = 500000
     # n_eps = 1000
-    train = 1
+    train = 0
     val = 1
 
     if train:           # Segun si se desea entrenar un nuevo algoritmo o probar uno existente
@@ -287,7 +287,7 @@ if __name__=="__main__":
 
 
     else:
-        learner.QPolicy.load_state_dict(torch.load(f"DQN_model_{num_tasks}Tasks_CasoX.pth"))  #Cargar modelo DQN entrenado
+        learner.QPolicy.load_state_dict(torch.load(f"DQN_model_{num_tasks}Tasks_Caso1.pth"))  #Cargar modelo DQN entrenado
         learner.QPolicy.eval()
         learner.epsilon = 0.0
 
