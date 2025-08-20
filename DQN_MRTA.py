@@ -12,7 +12,7 @@ import time
 class QNetwork(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(QNetwork, self).__init__()
-        num_neurons = 32                                # Número de neuronas en las capas ocultas (3 tareas: 16, 4 tareas: 24, 5 tareas: 32)
+        num_neurons = 36                                # Número de neuronas en las capas ocultas (3 tareas: 16, 4 tareas: 24, 5 tareas: 32) (+4 si Prueba3)
         self.fc1 = nn.Linear(state_dim, num_neurons)
         self.fc2 = nn.Linear(num_neurons, num_neurons)
         self.fc3 = nn.Linear(num_neurons, num_neurons)
@@ -288,17 +288,19 @@ class DQN:
                 #     time.sleep(1)
                 return False
 
-            if tasks_allocations[task] > 0 and tasks_allocations[task] != robot:      # Si la tarea ya tiene un robot asignado y no es el mismo
-                # print(f"Tarea {task} ya tiene asignado el robot {tasks_allocations[task]} y se le ha asignado el robot {robot}")
-                # if np.asarray(tasks_allocations).sum() > 0:
-                #     time.sleep(1)
-                return False
+            # Comentar en Prueba3
+            # if tasks_allocations[task] > 0 and tasks_allocations[task] != robot:      # Si la tarea ya tiene un robot asignado y no es el mismo
+            #     # print(f"Tarea {task} ya tiene asignado el robot {tasks_allocations[task]} y se le ha asignado el robot {robot}")
+            #     # if np.asarray(tasks_allocations).sum() > 0:
+            #     #     time.sleep(1)
+            #     return False
             
-            if robot in busy_robots_set and tasks_allocations[task] != robot:                   # Si el robot ya está asignado a otra tarea diferente
-                # print(f"Robot {robot} ya está ocupado")
-                # if np.asarray(tasks_allocations).sum() > 0:
-                #     time.sleep(1)
-                return False
+            # Comentar en Prueba3
+            # if robot in busy_robots_set and tasks_allocations[task] != robot:                   # Si el robot ya está asignado a otra tarea diferente
+            #     # print(f"Robot {robot} ya está ocupado")
+            #     # if np.asarray(tasks_allocations).sum() > 0:
+            #     #     time.sleep(1)
+            #     return False
         
         return True
 

@@ -1,0 +1,47 @@
+Permitir reasignar tareas + tiempo restante (+ desviación) en el estado
+(+4 neuronas)
+(Se cuenta como asignación a un tipo de tarea la primera que se hace, no quien la termina)
+
+Error comun: Desplazamientos inútiles (deshacer pasos y desplazar robots a tareas para luego pararlos y que ni siquiera lleguen a ella)
+
+1. 3 Tareas. (20 neuronas/capa)
+Media recompensas validación: 116.51 (maximo "posible": 160)
+Parece que asigna las tareas de forma bastante eficiente
+Suele hacer que el robot de baja capacidad reduzca el tiempo restante de una tarea para que luego la termine el de alta capacidad 
+A veces parece que cambia a asignaciones peores (pocas neuronas?) 
+Tiempo de entrenamiento: 11955.7s (3h 19min 16s)
+Tiempo medio para completar todas las tareas (validación): 16.13
+Distancia media recorrida por robot 1 (validación): 6.66
+Distancia media recorrida por robot 2 (validación): 7.40
+Media de tareas asignadas a robot baja capacidad (validación): 1.33
+Media de tareas asignadas a robot alta capacidad (validación): 1.67
+Media exito validación: 81.28%
+Media exito test: 83.33%
+
+2. 4 Tareas. (28 neuronas/capa)
+Media recompensas validación: 131.32 (maximo "posible": 180)
+Parece que asigna las tareas de forma muy eficiente
+Suele asignar tantas tareas al robot de alta capacidad como al de baja capacidad
+Suele hacer que el robot de baja capacidad reduzca el tiempo restante de una tarea para que luego la termine el de alta capacidad 
+Tiempo de entrenamiento: 17498.7s (4h 51min 39s)
+Tiempo medio para completar todas las tareas (validación): 16.39
+Distancia media recorrida por robot 1 (validación): 9.10
+Distancia media recorrida por robot 2 (validación): 9.17
+Media de tareas asignadas a robot baja capacidad (validación): 1.996
+Media de tareas asignadas a robot alta capacidad (validación): 2.004
+Media exito validación: 80.13%
+Media exito test: 85.00%
+
+3. 5 Tareas. (36 neuronas/capa) (Hacer otro test)
+Media recompensas validación: 133.64 (maximo "posible": 200)
+Parece que asigna las tareas de forma muy eficiente
+Suele asignar más tareas al robot de alta capacidad que al de baja capacidad
+Suele hacer que el robot de baja capacidad reduzca el tiempo restante de una tarea para que luego la termine el de alta capacidad 
+Tiempo de entrenamiento: 31995.5s (8h 53min 15s)
+Tiempo medio para completar todas las tareas (validación): 23.50
+Distancia media recorrida por robot 1 (validación): 10.95
+Distancia media recorrida por robot 2 (validación): 11.71
+Media de tareas asignadas a robot baja capacidad (validación): 2.36
+Media de tareas asignadas a robot alta capacidad (validación): 2.64
+Media exito validación: 80.68%
+Media exito test: 80.00%

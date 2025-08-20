@@ -26,7 +26,7 @@ Media de tareas asignadas a robot alta capacidad (validación): 2.008
 Media exito validación: 80.06%
 Media exito test: 77.5%
 
-3. 5 Tareas. (32 neuronas/capa) (Hacer otro test)
+3. 5 Tareas. (32 neuronas/capa)
 Media recompensas validación: 127.70 (maximo "posible": 200)
 Parece que asigna las tareas de forma bastante eficiente
 Suele asignar más tareas al robot de alta capacidad que al de baja capacidad

@@ -29,13 +29,13 @@ class MRTAWorldEnv(gym.Env):
             {
                 "robots_positions": spaces.Box(0, self.size - 1, shape=(self.num_robots,), dtype=int),      #Pos in interval (0,size-1)
                 "tasks_positions": spaces.Box(0, self.size - 1, shape=(self.num_tasks,), dtype=int),        #Pos in interval (0,size-1)
-                # "tasks_states": spaces.MultiDiscrete([3] * self.num_tasks),                                 #0: Pending, 1: Completed, 2: Failed
                 "tasks_states": spaces.MultiDiscrete([4] * self.num_tasks),                                 #0: Pending, 1: Completed, 2: Failed, 3: Allocated
                 "tasks_allocations": spaces.Box(0, self.num_robots, shape=(self.num_tasks,), dtype=int),    #0: Not allocated, else (n): Allocated to robot n (Probar a cambiar por multidiscrete)
                 "busy_robots": spaces.MultiDiscrete([2] * self.num_robots),                                 #0: Free, 1: Busy
                 "tasks_types": spaces.MultiDiscrete([3] * self.num_tasks),                                  #0: Easy, 1: Medium, 2: Hard
                 "robots_types": spaces.MultiDiscrete([2] * self.num_robots),                                #0: Low capacity, 1: High capacity
                 "time_lapse": spaces.Box(0, np.inf, dtype=float),                                           #Time lapsed since last step
+                "time_left": spaces.Box(0, np.inf, shape=(self.num_tasks,), dtype=int),                     #Time left for each task (Prueba3)
             }
         )
 
@@ -56,6 +56,7 @@ class MRTAWorldEnv(gym.Env):
         self.clock = None
     
     def get_obs(self):
+        dev = np.where(self.T2end > 0, np.random.randint(-1, 2, size=self.num_tasks), 0)
         return {
                 "robots_positions": self.robots_positions,
                 "tasks_positions": self.tasks_positions,
@@ -65,6 +66,7 @@ class MRTAWorldEnv(gym.Env):
                 "tasks_types": self._task_types,
                 "robots_types": self._robots_types,
                 "time_lapse": self._time_lapse,
+                "time_left": self.T2end + dev                   # Tiempo restante para cada tarea + desviacion (Prueba3)      
                 }
     
     def get_info(self):
@@ -81,7 +83,7 @@ class MRTAWorldEnv(gym.Env):
 
         return {"dist_travelled": dist_travelled, "time_steps": self._time_lapse, "perc_success": perc_success, "tasks_distribution": self._tasks_distribution}
 
-    def modify_state(self, robot_pos, task_pos, t2end):
+    def modify_state(self, robot_pos, task_pos, t2end):     # Solo para depuración
         self.robots_positions = robot_pos.copy()
         self.initial_positions = robot_pos.copy()
         self.tasks_positions = task_pos.copy()
@@ -112,8 +114,6 @@ class MRTAWorldEnv(gym.Env):
             else:
                 self._fail_prob[rob] = 0.1
 
-        self._tasks_distribution = np.zeros(2, dtype=float)             # Conteo de tareas asignadas a robots de baja y alta capacidad
-
 
         # Tiempo aleatorio en completar cada tarea
         self._task_types = np.random.randint(0, 3, self.num_tasks)
@@ -122,11 +122,11 @@ class MRTAWorldEnv(gym.Env):
 
         for task, task_type in enumerate(self._task_types):
             if task_type == 0:
-                self.T2end[task] = 3 + np.random.randint(-1, 2)    # Provisional
+                self.T2end[task] = 3 + np.random.randint(-1, 2)
             elif task_type == 1:
-                self.T2end[task] = 5 + np.random.randint(-1, 2)    # Provisional
+                self.T2end[task] = 5 + np.random.randint(-1, 2)
             else:
-                self.T2end[task] = 7 + np.random.randint(-1, 2)    # Provisional
+                self.T2end[task] = 7 + np.random.randint(-1, 2)
 
 
         # Posicion aleatoria inicial de robots y tareas
@@ -140,7 +140,8 @@ class MRTAWorldEnv(gym.Env):
         self._tasks_states = np.zeros(self.num_tasks, dtype=int)
         self._busy_robots = np.zeros(self.num_robots, dtype=int) 
         self._tasks_allocations = np.zeros(self.num_tasks, dtype=int)
-        self._time_lapse = 0.0
+        self._tasks_distribution = np.zeros(2, dtype=float)             # Conteo de tareas asignadas a robots de baja y alta capacidad
+        self._time_lapse = 0
 
         self.initial_positions = self.robots_positions.copy()     # Posiciones iniciales robots
 
@@ -219,15 +220,15 @@ class MRTAWorldEnv(gym.Env):
 
         if self.render_mode != "human":
             try:
-                min_dist = min(         # Menor de las distancias entre cada robot y su tarea
+                min_T = min(         # Menor tiempo de finalización entre cada robot y su tarea
                     abs(self._pos2rowcol(self.tasks_positions[task])[0] - self._pos2rowcol(self.robots_positions[robot-1])[0]) +
                     abs(self._pos2rowcol(self.tasks_positions[task])[1] - self._pos2rowcol(self.robots_positions[robot-1])[1]) +
                     self.T2end[task]
                     for task, robot in enumerate(self._tasks_allocations) if robot > 0)
             except ValueError:
-                min_dist = 0
+                min_T = 0
 
-            self._time_lapse = min_dist
+            self._time_lapse = min_T
 
             for i, robot_id in enumerate(self._tasks_allocations):      # Para cada asignacion
                 if robot_id > 0:                                        # Si la tarea está asignada
@@ -242,16 +243,16 @@ class MRTAWorldEnv(gym.Env):
                     dir_row = np.sign(task_row - robot_row)
                     dir_col = np.sign(task_col - robot_col)
 
-                    robot_row += dir_row * min(min_dist, abs(task_row - robot_row))
-                    min_dist_aux = min_dist - min(min_dist, abs(task_row - robot_row))
-                    robot_col += dir_col * min(min_dist_aux, abs(task_col - robot_col))
-                    min_dist_aux = min_dist_aux - min(min_dist_aux, abs(task_col - robot_col))
-                    self.T2end[task_idx] = max(0, self.T2end[task_idx] - min_dist_aux)
+                    robot_row += dir_row * min(min_T, abs(task_row - robot_row))
+                    min_T_aux = min_T - min(min_T, abs(task_row - robot_row))
+                    robot_col += dir_col * min(min_T_aux, abs(task_col - robot_col))
+                    min_T_aux = min_T_aux - min(min_T_aux, abs(task_col - robot_col))
+                    self.T2end[task_idx] = max(0, self.T2end[task_idx] - min_T_aux)
 
                     robot_pos = self._rowcol2pos(robot_row, robot_col)
                     self.robots_positions[robot_id - 1] = robot_pos
 
-            # Comprueba si el robot ha llegado a su tarea (por modificar: probabilidad fallo)
+            # Comprueba si el robot ha llegado a su tarea
             for task_idx, robot_id in enumerate(self._tasks_allocations):   # Para cada asignacion
                 if robot_id > 0:                                            # Si la tarea está asignada
                     task_pos = self.tasks_positions[task_idx]              # Posicion de la tarea
@@ -325,8 +326,6 @@ class MRTAWorldEnv(gym.Env):
                                 end_step = 1
                             elif self.T2end[task_idx] > 0:
                                 self.T2end[task_idx] -= 1
-                    
-                time.sleep(1)
 
                 # Un episodio acaba si todas las tareas se completan o si el numero de steps alcanza el limite (300)
                 terminated = np.all(self._tasks_states != 0) and np.all(self._tasks_states != 3)
@@ -338,9 +337,11 @@ class MRTAWorldEnv(gym.Env):
                 
                 end_step = end_step or terminated or truncated
 
-
+                time.sleep(0.2)
                 if self.render_mode == "human":
                     self._render_frame()
+
+                time.sleep(0.5)
 
                 # print("reward",reward)
 

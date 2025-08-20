@@ -1,0 +1,112 @@
+Diferentes tamaños de grid (usando resultados Prueba1)
+Grid 6x6
+1. 3 Tareas. 
+Media recompensas validación: 119.58 (maximo "posible": 160)
+Parece que asigna las tareas de forma muy eficiente
+Suele asignar más tareas al robot de alta capacidad que al de baja capacidad
+Tiempo medio para completar todas las tareas (validación): 14.52
+Distancia media recorrida por robot 1 (validación): 4.83
+Distancia media recorrida por robot 2 (validación): 5.28
+Media de tareas asignadas a robot baja capacidad (validación): 1.32
+Media de tareas asignadas a robot alta capacidad (validación): 1.68
+Media exito validación: 81.19%
+Media exito test: 86.67%
+
+2. 4 Tareas. 
+Media recompensas validación: 134.59 (maximo "posible": 180)
+Parece que asigna las tareas de forma bastante eficiente
+Suele esperar a que ambos robots acaben su primera tarea para asignar las otras 2
+Tiempo medio para completar todas las tareas (validación): 14.70
+Distancia media recorrida por robot 1 (validación): 7.02
+Distancia media recorrida por robot 2 (validación): 6.68
+Media de tareas asignadas a robot baja capacidad (validación): 1.997
+Media de tareas asignadas a robot alta capacidad (validación): 2.003
+Media exito validación: 80.00%
+Media exito test: 72.50%
+
+3. 5 Tareas. 
+Media recompensas validación: 138.58 (maximo "posible": 200)
+Parece que asigna las tareas de forma bastante eficiente
+Suele asignar más tareas al robot de alta capacidad que al de baja capacidad
+Tiempo medio para completar todas las tareas (validación): 20.99
+Distancia media recorrida por robot 1 (validación): 7.95
+Distancia media recorrida por robot 2 (validación): 7.86
+Media de tareas asignadas a robot baja capacidad (validación): 2.36
+Media de tareas asignadas a robot alta capacidad (validación): 2.64
+Media exito validación: 80.59%
+Media exito test: 80.00%
+
+
+Grid 12x12
+4. 3 Tareas. 
+Media recompensas validación: 108.54 (maximo "posible": 160)
+Parece que asigna las tareas de forma muy eficiente
+Suele asignar más tareas al robot de alta capacidad que al de baja capacidad
+Tiempo medio para completar todas las tareas (validación): 20.09
+Distancia media recorrida por robot 1 (validación): 9.62
+Distancia media recorrida por robot 2 (validación): 10.50
+Media de tareas asignadas a robot baja capacidad (validación): 1.30
+Media de tareas asignadas a robot alta capacidad (validación): 1.70
+Media exito validación: 81.29%
+Media exito test: 90.00%
+
+5. 4 Tareas. 
+Media recompensas validación: 123.51 (maximo "posible": 180)
+Parece que asigna las tareas de forma bastante eficiente
+Suele esperar a que ambos robots acaben su primera tarea para asignar las otras 2
+Tiempo medio para completar todas las tareas (validación): 20.23
+Distancia media recorrida por robot 1 (validación): 14.05
+Distancia media recorrida por robot 2 (validación): 13.43
+Media de tareas asignadas a robot baja capacidad (validación): 1.99
+Media de tareas asignadas a robot alta capacidad (validación): 2.01
+Media exito validación: 79.96%
+Media exito test: 75.00%
+
+6. 5 Tareas. 
+Media recompensas validación: 123.35 (maximo "posible": 200)
+Parece que asigna las tareas de forma bastante eficiente
+Suele asignar más tareas al robot de alta capacidad que al de baja capacidad
+Tiempo medio para completar todas las tareas (validación): 28.62
+Distancia media recorrida por robot 1 (validación): 15.83
+Distancia media recorrida por robot 2 (validación): 15.64
+Media de tareas asignadas a robot baja capacidad (validación): 2.33
+Media de tareas asignadas a robot alta capacidad (validación): 2.67
+Media exito validación: 80.61%
+Media exito test: 88.00%
+
+Grid 15x15
+7. 3 Tareas. 
+Media recompensas validación: 103.00 (maximo "posible": 160)
+Parece que asigna las tareas de forma bastante eficiente
+Suele asignar más tareas al robot de alta capacidad que al de baja capacidad
+Tiempo medio para completar todas las tareas (validación): 22.84
+Distancia media recorrida por robot 1 (validación): 12.20
+Distancia media recorrida por robot 2 (validación): 13.05
+Media de tareas asignadas a robot baja capacidad (validación): 1.31
+Media de tareas asignadas a robot alta capacidad (validación): 1.69
+Media exito validación: 81.25%
+Media exito test: 76.67%
+
+8. 4 Tareas. 
+Media recompensas validación: 117.25 (maximo "posible": 180)
+Parece que asigna las tareas de forma algo eficiente
+Suele esperar a que ambos robots acaben su primera tarea para asignar las otras 2
+Tiempo medio para completar todas las tareas (validación): 23.35
+Distancia media recorrida por robot 1 (validación): 17.56
+Distancia media recorrida por robot 2 (validación): 16.86
+Media de tareas asignadas a robot baja capacidad (validación): 1.987
+Media de tareas asignadas a robot alta capacidad (validación): 2.013
+Media exito validación: 79.94%
+Media exito test: 85.00%
+
+9. 5 Tareas. 
+Media recompensas validación: 115.86 (maximo "posible": 200)
+Parece que asigna las tareas de forma algo eficiente
+Suele asignar más tareas al robot de alta capacidad que al de baja capacidad
+Tiempo medio para completar todas las tareas (validación): 32.37
+Distancia media recorrida por robot 1 (validación): 19.93
+Distancia media recorrida por robot 2 (validación): 19.74
+Media de tareas asignadas a robot baja capacidad (validación): 2.33
+Media de tareas asignadas a robot alta capacidad (validación): 2.67
+Media exito validación: 80.61%
+Media exito test: 88.00%

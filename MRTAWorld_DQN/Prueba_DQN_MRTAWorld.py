@@ -43,7 +43,8 @@ class StateTransformer:
         Devuelve la dimensión del estado.
         """
         # return self.num_robots * 3 + self.num_tasks * 5                                 # Si posiciones
-        return self.num_robots * self.num_tasks + self.num_tasks * 3 + self.num_robots  # Si distancias
+        # return self.num_robots * self.num_tasks + self.num_tasks * 3 + self.num_robots  # Si distancias
+        return self.num_robots * self.num_tasks + self.num_tasks * 4 + self.num_robots  # Si Prueba3
         # return self.num_robots * self.num_tasks + self.num_tasks * 2
     
     def transform(self,observation):
@@ -54,6 +55,7 @@ class StateTransformer:
         busy_robots = list((np.array(observation["busy_robots"]).astype(float) / 0.5) - 1)                                  # Normalizar robots ocupados
         tasks_types = list((np.array(observation["tasks_types"]).astype(float) / 1) - 1)                                    # Normalizar tipos de tareas
         robots_types = list((np.array(observation["robots_types"]).astype(float) / 0.5) - 1)                                # Normalizar tipos de robots
+        time_left = list((np.array(observation["time_left"]).astype(float) / 5) - 1)                                        # Normalizar tiempo restante para cada tarea (Prueba3)
 
         # Usar distancias en lugar de posiciones
         distances = []
@@ -81,7 +83,8 @@ class StateTransformer:
         # print(f"Robots ocupados: {busy_robots}")
 
         # return build_state([robrows, robcols, taskrows, taskcols, tasks_states, tasks_allocations, tasks_types, robots_types])  # Si posiciones
-        return build_state([distances, tasks_states, tasks_allocations, tasks_types, robots_types])                             # Si distancias
+        # return build_state([distances, tasks_states, tasks_allocations, tasks_types, robots_types])                             # Si distancias
+        return build_state([distances, tasks_states, tasks_allocations, tasks_types, robots_types, time_left])                  # Si Prueba3
         # return build_state([distances, tasks_states, tasks_allocations, tasks_types])
         # return build_state([distances, tasks_states, tasks_allocations, robots_types])
         # return build_state([distances, tasks_states, tasks_allocations])
@@ -105,7 +108,7 @@ def plot_avg(data,txt):
 # Entrenamiento y pruebas
 if __name__=="__main__":
     rows, cols = 8, 8
-    num_robots, num_tasks = 2, 3        # Modificar neuronas al cambiar el número de tareas
+    num_robots, num_tasks = 2, 5        # Modificar neuronas al cambiar el número de tareas
     # num_robots, num_tasks = 1, 2
     env = gym.make('gym_examples/MRTAWorld-v0', rows = rows, cols = cols, num_robots = num_robots, num_tasks = num_tasks)#, render_mode = 'human')
     
@@ -117,7 +120,7 @@ if __name__=="__main__":
     n_eps = 500000
     # n_eps = 1000
     train = 0
-    val = 1
+    val = 0
 
     if train:           # Segun si se desea entrenar un nuevo algoritmo o probar uno existente
         total_steps = np.empty(n_eps)
@@ -287,7 +290,7 @@ if __name__=="__main__":
 
 
     else:
-        learner.QPolicy.load_state_dict(torch.load(f"DQN_model_{num_tasks}Tasks_Caso1.pth"))  #Cargar modelo DQN entrenado
+        learner.QPolicy.load_state_dict(torch.load(f"DQN_model_{num_tasks}Tasks_Caso3.pth"))  #Cargar modelo DQN entrenado
         learner.QPolicy.eval()
         learner.epsilon = 0.0
 
@@ -358,6 +361,8 @@ if __name__=="__main__":
             # print(f"Numero steps: {nsteps}\nRecompensa: {total_reward}\n")
 
         print("Fin evaluación")
+        print(f"Numero de tareas: {num_tasks}\tNumero de robots: {num_robots}")
+        print(f"Tamaño del grid: {rows}x{cols}")
         for i in range(num_robots): #Hacer media de ambos robots
             print(f"Distancia media recorrida por robot {i+1}: {robot_dists[:, i].mean()}")
 
