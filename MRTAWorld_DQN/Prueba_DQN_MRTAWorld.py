@@ -42,10 +42,10 @@ class StateTransformer:
         """
         Devuelve la dimensión del estado.
         """
-        # return self.num_robots * 3 + self.num_tasks * 5                                 # Si posiciones
-        # return self.num_robots * self.num_tasks + self.num_tasks * 3 + self.num_robots  # Si distancias
-        return self.num_robots * self.num_tasks + self.num_tasks * 4 + self.num_robots  # Si Prueba3
-        # return self.num_robots * self.num_tasks + self.num_tasks * 2
+
+        return self.num_robots * self.num_tasks + self.num_tasks * 3 + self.num_robots      # Si distancias
+        # return self.num_robots * 3 + self.num_tasks * 5                                   # Si posiciones
+        # return self.num_robots * self.num_tasks + self.num_tasks * 4 + self.num_robots    # Si prueba con reasignaciones
     
     def transform(self,observation):
         robots_positions = list(np.array(observation["robots_positions"]).astype(float))
@@ -78,16 +78,10 @@ class StateTransformer:
         taskrows = np.array(taskrows) / max(self.rows, self.cols)
         taskcols = np.array(taskcols) / max(self.rows, self.cols)
 
-        # print(f"Distancias: {distances}")
-        # print(f"Tareas: {tasks_states}")
-        # print(f"Robots ocupados: {busy_robots}")
 
-        # return build_state([robrows, robcols, taskrows, taskcols, tasks_states, tasks_allocations, tasks_types, robots_types])  # Si posiciones
-        # return build_state([distances, tasks_states, tasks_allocations, tasks_types, robots_types])                             # Si distancias
-        return build_state([distances, tasks_states, tasks_allocations, tasks_types, robots_types, time_left])                  # Si Prueba3
-        # return build_state([distances, tasks_states, tasks_allocations, tasks_types])
-        # return build_state([distances, tasks_states, tasks_allocations, robots_types])
-        # return build_state([distances, tasks_states, tasks_allocations])
+        return build_state([distances, tasks_states, tasks_allocations, tasks_types, robots_types])                                 # Si distancias
+        # return build_state([robrows, robcols, taskrows, taskcols, tasks_states, tasks_allocations, tasks_types, robots_types])    # Si posiciones
+        # return build_state([distances, tasks_states, tasks_allocations, tasks_types, robots_types, time_left])                    # Si prueba con reasignaciones
 
 
 def plot_avg(data,txt):
@@ -99,8 +93,6 @@ def plot_avg(data,txt):
     for i in range(N):
         avg[i] = data[max(0,i-1000):i+1].mean()
     plt.plot(avg)
-    # plt.title("Evolution of average "+txt)
-    # plt.show()
     plt.savefig(f"Avg{txt}_{num_tasks}Tasks_CasoX.png")
     plt.clf()
 
@@ -108,9 +100,8 @@ def plot_avg(data,txt):
 # Entrenamiento y pruebas
 if __name__=="__main__":
     rows, cols = 8, 8
-    num_robots, num_tasks = 2, 5        # Modificar neuronas al cambiar el número de tareas
-    # num_robots, num_tasks = 1, 2
-    env = gym.make('gym_examples/MRTAWorld-v0', rows = rows, cols = cols, num_robots = num_robots, num_tasks = num_tasks)#, render_mode = 'human')
+    num_robots, num_tasks = 2, 3        # Modificar neuronas al cambiar el número de tareas
+    env = gym.make('gym_examples/MRTAWorld-v0', rows = rows, cols = cols, num_robots = num_robots, num_tasks = num_tasks)
     
     ft = StateTransformer(rows = rows, cols = cols, num_robots = num_robots, num_tasks = num_tasks)
     state_dim = ft.state_dim()
@@ -118,7 +109,6 @@ if __name__=="__main__":
     learner = DQN(env = env, state_dim = state_dim, alpha = 1e-4, gamma = 0.9, batch_size = 64, buffer_size = 100000)
     
     n_eps = 500000
-    # n_eps = 1000
     train = 0
     val = 0
 
@@ -130,7 +120,6 @@ if __name__=="__main__":
         perc_success = np.zeros(n_eps)
         tab_time = np.empty(n_eps)
         tasks_distribution = np.zeros((n_eps, 2))  # Dos tipos de robots (baja y alta capacidad)
-        # tab_qmax = np.empty(n_eps)
 
         print(f"Estructura de la red neuronal: {learner.QPolicy}") 
 
@@ -140,15 +129,11 @@ if __name__=="__main__":
         for ep in range(1,n_eps+1):
             # Epsilon-decay
             if ep < n_eps / 10:
-            # if ep == 1:
                 learner.epsilon = 1.0
             elif ep < n_eps * 3/4:
-                # learner.epsilon = max(0.1, 0.999996 * learner.epsilon)
                 learner.epsilon = max(0.1, 0.999992 * learner.epsilon)
             else:
-                # learner.epsilon = max(0.01, 0.99999 * learner.epsilon)
                 learner.epsilon = max(0.01, 0.99998 * learner.epsilon)
-            # learner.epsilon = 1
 
             obs, info = env.reset()
             state = ft.transform(obs)
@@ -159,34 +144,10 @@ if __name__=="__main__":
             tab_eps.append(learner.epsilon)
             dist_per_robot = np.zeros(num_robots)
 
-            # print("\nEpisodio",ep)
-
             while not done:
-                # print("Nro steps:",nsteps)
-
-                # print(f"Estado: {state}")
-
-                # action = learner.choose_act(state,list(obs["tasks_states"]))
                 action = learner.choose_act(state, list(obs["tasks_states"]), list(obs["tasks_allocations"]), list(obs["busy_robots"]))
-                # print(f"Asignacion:    {action}")
-                # print(f"Estado tareas: {obs['tasks_states']}")
-
-                # print(f"Accion: {action}")
-                # time.sleep(5)
 
                 obs, reward, truncated, terminated, info = env.step(action)
-
-                # reward /= 10
-                
-                # print(f"Recompensa:{reward}")
-
-                # obs = {"robots_positions": [18, 38],
-                #        "tasks_positions": [21, 35, 42],
-                #        "tasks_states": [0, 0, 0],
-                #        "tasks_allocations": [0, 0, 0],
-                #        "busy_robots": [0, 0],
-                #        "tasks_types": [0, 1, 2],
-                #        "robots_types": [0, 1]}
 
                 # Distancia recorrida por cada robot cada episodio
                 dist_per_robot += np.array(info["dist_travelled"])
@@ -198,18 +159,9 @@ if __name__=="__main__":
                 learner.store_experience(state, action, reward, next_state, done, obs)
                 learner.updateQTarget()
                 state = next_state
-                # print(state)
 
                 nsteps += 1
                 total_reward += reward
-
-                # time.sleep(2)
-
-
-            # try:
-            #     qmax = max(learner.Q.values())
-            # except:
-            #     qmax = -1
 
             total_steps[ep-1] = nsteps
             total_reward_tab[ep-1] = total_reward
@@ -217,7 +169,6 @@ if __name__=="__main__":
             tab_time[ep-1] = TSteps
             perc_success[ep-1] = info["perc_success"]
             tasks_distribution[ep-1] = info["tasks_distribution"]
-            # tab_qmax[ep-1] = qmax
 
             if ep % 1000 == 0:
                 print(f"Episodio {ep}\nMedia ultimos 100 episodios: {total_steps[max(1,ep-100):ep+1].mean():.2f}")
@@ -237,7 +188,7 @@ if __name__=="__main__":
         T_train = T_end-T_start
         print("Fin entrenamiento")
         print(f"Tiempo de entrenamiento: {T_train} s")
-        for i in range(num_robots): #Hacer media de ambos robots
+        for i in range(num_robots):
             print(f"Distancia media recorrida por robot {i+1} ultimos 1000 eps: {robot_dists[-1000:, i].mean()}")
 
         print(f"Tiempo medio para completar tareas en time-steps (ultimos 1000 episodios): {tab_time[-1000:].mean()}")
@@ -248,49 +199,35 @@ if __name__=="__main__":
         print(f"Recompensa media ultimos 100 episodios: {total_reward_tab[100:].mean()}\n")
 
         plt.plot(total_steps)
-        # plt.title("Total steps")
-        # plt.show()
         plt.savefig(f"TotalSteps_{num_tasks}Tasks_CasoX.png")
         plt.clf()
 
-        # plot_avg(total_steps,"steps")
         plot_avg(total_steps,"Steps")
 
-        # plot_avg(total_reward_tab,"reward")
         plot_avg(total_reward_tab,"Reward")
 
         plt.plot(tab_eps)
         plt.title("Evolucion epsilon")
-        # plt.show()
         plt.savefig(f"EvolEps.png")
         plt.clf()
 
         for i in range(num_robots):
-            # plot_avg(robot_dists[:, i], f"distance by robot {i+1}")
             plot_avg(robot_dists[:, i], f"Dist_Rob{i+1}")
 
-        # plot_avg(tab_time,"time to complete all tasks (time-steps)")
         plot_avg(tab_time,f"Time2Complete")
 
-        # plot_avg(perc_success,"percentage of success")
         plot_avg(perc_success,"PercSuccess")
 
-        # plot_avg(tasks_distribution[:, 0],"Tasks distribution to low capacity robots")
         plot_avg(tasks_distribution[:, 0],"Tasks_distribution_low_capacity")
-        # plot_avg(tasks_distribution[:, 1],"Tasks distribution to high capacity robots")
         plot_avg(tasks_distribution[:, 1],"Tasks_distribution_high_capacity")
 
         plot_avg(loss_tab,"Loss")
         plot_avg(qpolicy_tab, "QPolicy")
         plot_avg(qtarget_tab, "QTarget")
 
-        # plt.plot(tab_qmax)
-        # plt.title("Evolucion max Q")
-        # plt.show()
-
 
     else:
-        learner.QPolicy.load_state_dict(torch.load(f"DQN_model_{num_tasks}Tasks_Caso3.pth"))  #Cargar modelo DQN entrenado
+        learner.QPolicy.load_state_dict(torch.load(f"DQN_model_{num_tasks}Tasks_Caso1.pth"))  #Cargar modelo DQN entrenado
         learner.QPolicy.eval()
         learner.epsilon = 0.0
 
@@ -322,26 +259,19 @@ if __name__=="__main__":
             TSteps = 0
             
             while not done:
-                # action = learner.choose_act(state)
-                # action = learner.choose_act(state, list(obs["tasks_states"]), list(obs["tasks_allocations"]))
                 action = learner.choose_act(state, list(obs["tasks_states"]), list(obs["tasks_allocations"]), list(obs["busy_robots"]))
-                # print(f"Asignacion:    {action}")
-                # print(f"Estado tareas: {obs['tasks_states']}")
 
                 obs, reward, truncated, terminated, info  = env.step(action)
                 next_state = ft.transform(obs)
                 done = terminated or truncated
 
                 state = next_state
-                # print(state)
 
                 nsteps += 1
                 total_reward += reward
 
                 TSteps += info["time_steps"]
                 dist_per_robot += np.array(info["dist_travelled"])
-
-                # time.sleep(2)
 
             if ep % int(n_eps/5) == 0:
                 print(f"Episodio {ep}")
@@ -353,16 +283,10 @@ if __name__=="__main__":
             perc_success[ep-1] = info["perc_success"]
             tasks_distribution[ep-1] = info["tasks_distribution"]
 
-            # print(f"Tiempo para completar tareas en time-steps: {TSteps}")
-            # print(f"Distancia recorrida por cada robot: {dist_per_robot}")
-
-            # print(f"Porcentaje de tareas completadas con exito: {info['perc_success']*100:.2f}%")
-
-            # print(f"Numero steps: {nsteps}\nRecompensa: {total_reward}\n")
-
         print("Fin evaluación")
         print(f"Numero de tareas: {num_tasks}\tNumero de robots: {num_robots}")
         print(f"Tamaño del grid: {rows}x{cols}")
+
         for i in range(num_robots): #Hacer media de ambos robots
             print(f"Distancia media recorrida por robot {i+1}: {robot_dists[:, i].mean()}")
 
@@ -383,7 +307,7 @@ if __name__=="__main__":
     steps_list = []
     learner.epsilon=0.0
 
-    # Iniciar prueba al pulsar boton
+    # Iniciar prueba al pulsar Enter
     input("Pulsar Enter para iniciar la prueba")
 
     for i in range(10):
@@ -397,25 +321,19 @@ if __name__=="__main__":
 
         print(f"Prueba visual {i+1}")
         while not done:
-            # action = learner.choose_act(state)
             action = learner.choose_act(state, list(obs["tasks_states"]), list(obs["tasks_allocations"]), list(obs["busy_robots"]))
-            # print(f"Asignacion:    {action}")
-            # print(f"Estado tareas: {obs['tasks_states']}")
 
             obs, reward, truncated, terminated, info  = env.step(action)
             next_state = ft.transform(obs)
             done = terminated or truncated
 
-            state=next_state
-            # print(state)
+            state = next_state
 
             nsteps += 1
             total_reward += reward
 
             TSteps += info["time_steps"]
             dist_per_robot += np.array(info["dist_travelled"])
-
-            # time.sleep(2)
 
         print(f"Tiempo para completar tareas en time-steps: {TSteps}")
         print(f"Distancia recorrida por cada robot: {dist_per_robot}")

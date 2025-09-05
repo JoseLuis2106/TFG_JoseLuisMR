@@ -12,7 +12,7 @@ import time
 class QNetwork(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(QNetwork, self).__init__()
-        num_neurons = 36                                # Número de neuronas en las capas ocultas (3 tareas: 16, 4 tareas: 24, 5 tareas: 32) (+4 si Prueba3)
+        num_neurons = 16                                # Número de neuronas en las capas ocultas (3 tareas: 16, 4 tareas: 24, 5 tareas: 32) (+4 si prueba con reasignaciones)
         self.fc1 = nn.Linear(state_dim, num_neurons)
         self.fc2 = nn.Linear(num_neurons, num_neurons)
         self.fc3 = nn.Linear(num_neurons, num_neurons)
@@ -45,8 +45,6 @@ class DQN:
         self.action_dim = len(self.valid_act_space)
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        # print(f"Dispositivo utilizado: {self.device}")
-        # time.sleep(2) 
 
         self.QPolicy = QNetwork(self.state_dim, self.action_dim).to(self.device)                # Red neuronal para la política
         self.QTarget = QNetwork(self.state_dim, self.action_dim).to(self.device)                # Red neuronal objetivo
@@ -78,62 +76,24 @@ class DQN:
             print("busy_robots:", busy_robots)
             exit()
 
-        # print(f"Acciones válidas: {valid_actions}")
-
-        # print(f"Estado: {state}")
-        # time.sleep(5)
 
         if np.random.random() < self.epsilon:
             action =  random.choice(valid_actions)                                                          # Explora una acción aleatoria válida
-
-            # with torch.no_grad():
-            #     state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)               # Convierte el estado a tensor y lo envía al dispositivo
-            #     q_values = self.QPolicy(state).cpu().numpy().flatten()                                      # Obtiene los valores Q de la red de política
-            #     q_values = [q_values[self.action_to_idx[a]] for a in valid_actions]                         # Filtra los valores Q para las acciones válidas                  
-                # for a, q in zip(valid_actions, q_values):
-                #     print(f"Acción: {a}, Valor Q: {q}") 
-
-            # print(f"Asignacion anterior: {tasks_allocations}")
-            # print(f"Acción elegida: {action}")
             return action
-        # else:
-        #     with torch.no_grad():
-        #         state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)               # Convierte el estado a tensor y lo envía al dispositivo
-        #         q_values = self.QPolicy(state).cpu().numpy().flatten()                                      # Obtiene los valores Q de la red de política
-        #         q_values = [q_values[self.action_to_idx[action]] for action in valid_actions]               # Filtra los valores Q para las acciones válidas                
-        #         max_q = np.max(q_values)                                                                    # Obtiene el valor Q máximo
-
-        #         for a, q in zip(valid_actions, q_values):
-        #             print(f"Acción: {a}, Valor Q: {q}") 
-
-        #         # Elige una acción aleatoria entre las que tienen el valor Q máximo
-        #         best_indices = [i for i, q in enumerate(q_values) if q == max_q]
-        #         chosen_index = np.random.choice(best_indices)
-        #         action = valid_actions[chosen_index]
-        #         action = np.maximum(action, tasks_allocations)
-        #         return action
         
         else:
             state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)                           # Convierte el estado a tensor y lo envía al dispositivo
             with torch.no_grad():
                 q_values = self.QPolicy(state).squeeze(0)                                                           # Obtiene los valores Q de la red de política
-                # print(f"Valores Q para todas las acciones: {q_values.cpu().numpy()}")                                      # Imprime los valores Q para todas las acciones
                 valid_indices = torch.tensor([self.action_to_idx[a] for a in valid_actions], device = self.device)  # Convierte las acciones válidas a índices y los envía al dispositivo
                 q_values = q_values[valid_indices]                                                                  # Filtra los valores Q para las acciones válidas
-                # print(f"Valores Q para acciones válidas: {q_values.cpu().numpy()}")   
                 
                 max_q = q_values.max().item()                                                                       # Obtiene el valor Q máximo y su índice
                 max_indices = (q_values == max_q).nonzero(as_tuple=True)[0]                                         # Obtiene los índices de las acciones con el valor Q máximo
 
                 chosen_index = max_indices[torch.randint(0, len(max_indices), ())].item()                           # Elige un índice aleatorio entre los máximos
                 action = valid_actions[chosen_index]                                                                # Obtiene la acción correspondiente al índice elegido
-                # action = np.maximum(action, tasks_allocations)                                                      # Asegura que la acción no asigne más robots de los disponibles
 
-                # for a, q in zip(valid_actions, q_values):
-                #     print(f"Acción: {a}, Valor Q: {q}") 
-                
-                # print(f"Asignacion anterior: {tasks_allocations}")
-                # print(f"Acción elegida: {action}")
                 return action
         
 
@@ -159,7 +119,7 @@ class DQN:
             return
         
         # Batch aleatorio de experiencias
-        batch = random.sample(self.buffer, self.batch_size)                             # Se eliminan las experiencias?
+        batch = random.sample(self.buffer, self.batch_size)
         states, actions, rewards, next_states, dones, next_obs = zip(*batch)
         next_obs = {
             "tasks_states": [obs["tasks_states"] for obs in next_obs],
@@ -179,11 +139,7 @@ class DQN:
         q_val_policy = self.QPolicy(states).gather(1, actions)          # Obtiene los valores Q para las distintas acciones tomadas
         self.qpolicy_vals.append(q_val_policy.cpu().detach().numpy()) 
 
-        # with torch.no_grad():
-        #     q_val_next = self.QTarget(next_states)
-        #     q_val_target = rewards + (self.gamma * q_val_next * (1 - dones))
-
-        with torch.no_grad():
+        with torch.no_grad():                                           # Obtención Q-values de la red objetivo
             batch_size = states.size(0)
             valid_mask = torch.zeros((batch_size, self.action_dim), dtype = torch.bool)
 
@@ -195,8 +151,6 @@ class DQN:
                 valid_actions = [a for a in self.valid_act_space if self._validate_action(a, tasks_states[i], tasks_allocations[i], busy_robots[i])]
                 valid_indices = [self.action_to_idx[a] for a in valid_actions]
                 valid_mask[i, valid_indices] = True
-                # if dones[i]:
-                #     print(f"Estado terminal con recompensa {rewards[i].item()}")
 
             q_val_next = self.QTarget(next_states)
             neg_fill = torch.tensor(-1e9, device = self.device)
@@ -211,21 +165,13 @@ class DQN:
 
         self.optimizer.zero_grad()                                      # Limpia los gradientes
         loss.backward()                                                 # Calcula los gradientes
-        # for name, param in self.QPolicy.named_parameters():
-        #     if param.grad is not None:
-        #         print(f"{name} tiene gradiente con norma {param.grad.norm().item()}")
-        #     else:
-        #         print(f"{name} NO tiene gradiente")
-        # time.sleep(2)
 
         self.optimizer.step()                                           # Actualiza los pesos de la red de política
 
         self.steps += 1
         if self.steps % self.steps_update == 0:                         # Actualiza la red objetivo cada ciertos pasos
             self.QTarget.load_state_dict(self.QPolicy.state_dict())
-            # print(f"Loss: {loss.item()}")
-            # print(f"Ejemplo:\nEstado: {states[0].cpu().numpy()}\nAccion: {actions[0].item()}\nRecompensa: {rewards[0].item()}\nEstado siguiente: {next_state[0].cpu().numpy()}\nHecho: {dones[0].item()}")
-
+            
 
     def _generate_action_combinations(self, nvec):
         """
@@ -260,47 +206,24 @@ class DQN:
         Comprueba si alguna de las tareas asignadas ya estan completadas o falladas
         """
         action = np.asarray(action) 
-
-        # print("Asignacion anterior: ",tasks_allocations)
-        # print("Estados de las tareas: ",tasks_states)
-        # print("Comprobando accion: ",action)
         
         busy_robots_set = set()                         # Conjunto para almacenar los robots ocupados
         for robot, busy in enumerate(busy_robots):
             if busy:
                 busy_robots_set.add(robot + 1)          # +1 porque los robots se numeran desde 1 en lugar de 0
 
-        # print("robots ocupados",busy_robots)
-
-        # for task, robot in enumerate(action):
-        #     if robot > 0: 
-        #         if tasks_states[task] != 0:       # Si la tarea no está pendiente y se le ha asignado un robot
-        #             # print(f"Tarea {task} no pendiente")
-        #             return False
-                
-        #         if robot in busy_robots:          # Si el robot ya está asignado a otra tarea
-        #             return False
 
         for task, robot in enumerate(action):
-            if (tasks_states[task] == 1 or tasks_states[task] == 2) and robot > 0:  # Si la tarea ya está completada (1) o fallada (2) y se le ha asignado un robot
-                # print(f"Tarea {task} ya completada (1) o fallada (2) y se le ha asignado un robot {robot}")
-                # if np.asarray(tasks_allocations).sum() > 0:
-                #     time.sleep(1)
+            if (tasks_states[task] == 1 or tasks_states[task] == 2) and robot > 0:      # Si la tarea ya está completada (1) o fallada (2) y se le ha asignado un robot
                 return False
 
-            # Comentar en Prueba3
-            # if tasks_allocations[task] > 0 and tasks_allocations[task] != robot:      # Si la tarea ya tiene un robot asignado y no es el mismo
-            #     # print(f"Tarea {task} ya tiene asignado el robot {tasks_allocations[task]} y se le ha asignado el robot {robot}")
-            #     # if np.asarray(tasks_allocations).sum() > 0:
-            #     #     time.sleep(1)
-            #     return False
+            # Comentar en prueba con reasignaciones
+            if tasks_allocations[task] > 0 and tasks_allocations[task] != robot:        # Si la tarea ya tiene un robot asignado y no es el mismo
+                return False
             
-            # Comentar en Prueba3
-            # if robot in busy_robots_set and tasks_allocations[task] != robot:                   # Si el robot ya está asignado a otra tarea diferente
-            #     # print(f"Robot {robot} ya está ocupado")
-            #     # if np.asarray(tasks_allocations).sum() > 0:
-            #     #     time.sleep(1)
-            #     return False
+            # Comentar en prueba con reasignaciones
+            if robot in busy_robots_set and tasks_allocations[task] != robot:           # Si el robot ya está asignado a otra tarea diferente
+                return False
         
         return True
 

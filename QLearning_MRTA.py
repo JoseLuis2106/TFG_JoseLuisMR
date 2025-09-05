@@ -26,32 +26,25 @@ class QLearning:
         """
         Elige la acción correspondiente mediante epsilon-greedy. Distingue entre espacio de acciones discreto o multidiscreto.
         """
-        # print("Estados de las tareas: ",tasks_states)
-        # print("Asignaciones de tareas: ",tasks_allocations)
 
         valid_actions = [a for a in self.valid_act_space if self._validate_action(a, tasks_states, tasks_allocations, busy_robots)]
 
-        # for a, q in zip(valid_actions, [self.getQ(state, a) for a in valid_actions]):
-        #     print(f"Acción: {a}, Valor Q: {q}") 
 
         if np.random.random() < self.epsilon:
             action = valid_actions[np.random.randint(len(valid_actions))]
             action = np.maximum(action, tasks_allocations)
-            # print("Acción elegida: ",action,end="\n\n")
-            # if np.asarray(tasks_allocations).sum() > 0:
-            #     time.sleep(1)
+
             return action
         else:
             q_values = [self.getQ(state, action) for action in valid_actions]
             max_q = np.max(q_values)
+
             best_indices = [i for i, q in enumerate(q_values) if q == max_q]
             chosen_index = np.random.choice(best_indices)
-            # return valid_actions[chosen_index]
+
             action = valid_actions[chosen_index]
             action = np.maximum(action, tasks_allocations)
-            # print("Acción elegida: ",action,end="\n\n")
-            # if np.asarray(tasks_allocations).sum() > 0:
-            #     time.sleep(1)
+            
             return action
         
     def updateQ(self, state, action, reward, next_state):
@@ -95,44 +88,20 @@ class QLearning:
         Comprueba si alguna de las tareas asignadas ya estan completadas o falladas
         """
         action = np.asarray(action) 
-
-        # print("Asignacion anterior: ",tasks_allocations)
-        # print("Estados de las tareas: ",tasks_states)
-        # print("Comprobando accion: ",action)
         
         busy_robots_set = set()                         # Conjunto para almacenar los robots ocupados
         for robot, busy in enumerate(busy_robots):
             if busy:
                 busy_robots_set.add(robot + 1)          # +1 porque los robots se numeran desde 1 en lugar de 0
 
-        # print("robots ocupados",busy_robots)
-
-        # for task, robot in enumerate(action):
-        #     if robot > 0: 
-        #         if tasks_states[task] != 0:       # Si la tarea no está pendiente y se le ha asignado un robot
-        #             # print(f"Tarea {task} no pendiente")
-        #             return False
-                
-        #         if robot in busy_robots:          # Si el robot ya está asignado a otra tarea
-        #             return False
-
         for task, robot in enumerate(action):
             if (tasks_states[task] == 1 or tasks_states[task] == 2) and robot > 0:              # Si la tarea ya está completada (1) o fallada (2) y se le ha asignado un robot
-                # print(f"Tarea {task} ya completada (1) o fallada (2) y se le ha asignado un robot {robot}")
-                # if np.asarray(tasks_allocations).sum() > 0:
-                #     time.sleep(1)
                 return False
 
             if tasks_allocations[task] > 0 and tasks_allocations[task] != robot:                # Si la tarea ya tiene un robot asignado y no es el mismo
-                # print(f"Tarea {task} ya tiene asignado el robot {tasks_allocations[task]} y se le ha asignado el robot {robot}")
-                # if np.asarray(tasks_allocations).sum() > 0:
-                #     time.sleep(1)
                 return False
             
             if robot in busy_robots_set and tasks_allocations[task] != robot:                   # Si el robot ya está asignado a otra tarea diferente
-                # print(f"Robot {robot} ya está ocupado")
-                # if np.asarray(tasks_allocations).sum() > 0:
-                #     time.sleep(1)
                 return False
         
         return True
