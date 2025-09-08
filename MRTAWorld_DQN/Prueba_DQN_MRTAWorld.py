@@ -109,8 +109,8 @@ if __name__=="__main__":
     learner = DQN(env = env, state_dim = state_dim, alpha = 1e-4, gamma = 0.9, batch_size = 64, buffer_size = 100000)
     
     n_eps = 500000
-    train = 0
-    val = 0
+    train = 1
+    val = 1
 
     if train:           # Segun si se desea entrenar un nuevo algoritmo o probar uno existente
         total_steps = np.empty(n_eps)

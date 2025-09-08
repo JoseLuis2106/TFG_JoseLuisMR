@@ -82,13 +82,13 @@ def plot_avg(data,txt):
 # Entrenamiento y pruebas
 if __name__=="__main__":
     rows, cols = 6, 6
-    num_robots, num_tasks = 2, 4
+    num_robots, num_tasks = 2, 3
     env = gym.make('gym_examples/MRTAWorld-v0',rows = rows, cols = cols, num_robots = num_robots, num_tasks = num_tasks)
     learner = QLearning(env, alpha = 1e-2, gamma = 0.9)
     ft = StateTransformer(rows = rows, cols = cols)
 
     n_eps = 10000000  # Número de episodios de entrenamiento
-    train = 0
+    train = 1
     val = 1
 
     if train:           # Segun si se desea entrenar un nuevo algoritmo o probar uno existente

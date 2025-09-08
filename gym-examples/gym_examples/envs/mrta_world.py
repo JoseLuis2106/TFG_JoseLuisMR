@@ -240,13 +240,15 @@ class MRTAWorldEnv(gym.Env):
                 if robot_id > 0:                                            # Si la tarea está asignada
                     task_pos = self.tasks_positions[task_idx]               # Posicion de la tarea
                     robot_pos = self.robots_positions[robot_id - 1]         # Posicion del robot
+                    
                     if self.robots_positions[robot_id - 1] == task_pos and self._tasks_states[task_idx] != 1 and self._tasks_states[task_idx] != 2 and self.T2end[task_idx] <= 0:
-                        if self.np_random.uniform(0, 1) > self._fail_prob[robot_id - 1]:  # Si el robot no falla
+                        if self.np_random.uniform(0, 1) > self._fail_prob[robot_id - 1]:    # Si el robot no falla
                             reward += 20
                             self._tasks_states[task_idx] = 1        # Tarea completada
-                        else:  # Si el robot falla
-                            # reward -= 5
+
+                        else:                                                               # Si el robot falla (sin recompensa +20)
                             self._tasks_states[task_idx] = 2        # Tarea fallada
+
                         self._tasks_allocations[task_idx] = 0       # Tarea no asignada
                         self._busy_robots[robot_id - 1] = 0         # Robot liberado
                         end_step = 1
@@ -266,7 +268,7 @@ class MRTAWorldEnv(gym.Env):
                 self._time_lapse += 1
 
                 # Movimiento de los robots a sus tareas
-                for i, robot_id in enumerate(self._tasks_allocations):  # Para cada asignacion
+                for i, robot_id in enumerate(self._tasks_allocations):      # Para cada asignacion
                     if robot_id > 0:  # Si la tarea está asignada
                         task_idx = i  # Indice de la tarea
                         task_pos = self.tasks_positions[task_idx]           # Posicion de la tarea
@@ -293,11 +295,11 @@ class MRTAWorldEnv(gym.Env):
                         # Comprueba si el robot ha llegado a su tarea (por modificar: probabilidad fallo)
                         if self.robots_positions[robot_id-1] == task_pos and self._tasks_states[task_idx] != 1 and self._tasks_states[task_idx] != 2:
                             if self.T2end[task_idx] <= 0:
-                                if self.np_random.uniform(0, 1) > self._fail_prob[robot_id - 1]:  # Si el robot no falla
+                                if self.np_random.uniform(0, 1) > self._fail_prob[robot_id - 1]:    # Si el robot no falla
                                     reward += 20
                                     self._tasks_states[task_idx] = 1        # Tarea completada
 
-                                else:  # Si el robot falla (sin recompensa +20)
+                                else:                                                               # Si el robot falla (sin recompensa +20)
                                     self._tasks_states[task_idx] = 2        # Tarea fallada
 
                                 self._tasks_allocations[task_idx] = 0       # Tarea no asignada
